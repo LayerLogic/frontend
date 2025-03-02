@@ -28,6 +28,8 @@
 </template>
 
 <script>
+import { setToken } from '@/utils/cookies'
+
 export default {
   name: 'LoginView',
   data() {
@@ -38,6 +40,7 @@ export default {
   },
   methods: {
     handleLogin() {
+      setToken('fake-token')
       console.log('Login attempt:', this.email, this.password)
     },
   },
@@ -53,7 +56,7 @@ export default {
 }
 
 .login-form {
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   background-color: var(--color-background);
   box-shadow: 0 0 20rem -3.3rem var(--color-primary);

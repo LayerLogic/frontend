@@ -76,7 +76,7 @@ export default {
 }
 
 .register-form {
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: 1rem;
   background-color: var(--color-background);
   box-shadow: 0 0 20rem -3.3rem var(--color-primary);

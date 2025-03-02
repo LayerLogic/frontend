@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 
 import { mount } from '@vue/test-utils'
-import HelloWorld from '../HelloWorld.vue'
+import GreetingMsg from '../landing/GreetingMsg.vue'
 
-describe('HelloWorld', () => {
+describe('GreetingMsg', () => {
   it('renders properly', () => {
-    const wrapper = mount(HelloWorld, { props: { msg: 'Hello Vitest' } })
-    expect(wrapper.text()).toContain('Hello Vitest')
+    const wrapper = mount(GreetingMsg, { props: { msg: 'LayerLogic' } })
+    expect(wrapper.text()).toContain('LayerLogic')
   })
 })

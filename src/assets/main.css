@@ -1,23 +1,43 @@
 @import './base.css';
 
+@font-face {
+  font-family: 'DM Sans';
+  src: url('./fonts/DM_Sans/static/DMSans-light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('./fonts/DM_Sans/static/DMSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  src: url('./fonts/DM_Sans/static/DMSans-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
 #app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
-  font-weight: normal;
 }
 
 a,
-.green {
+.purple {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--color-primary);
   transition: 0.4s;
-  padding: 3px;
+  padding: 2px;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: rgba(196, 151, 251, 0.2);
   }
 }
 

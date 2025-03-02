@@ -1,18 +1,21 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import GreetingMsg from './components/landing/GreetingMsg.vue'
+import ToggleTheme from './components/ToggleTheme.vue'
+import LayerLogicLogo from './components/LayerLogicLogo.vue'
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
+    <LayerLogicLogo class="logo" width="160" hight="160" />
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <GreetingMsg msg="LayerLogic" />
+      <ToggleTheme />
 
       <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/">Login</RouterLink>
+        <RouterLink to="/auth/register">Register</RouterLink>
       </nav>
     </div>
   </header>
@@ -21,7 +24,7 @@ import HelloWorld from './components/HelloWorld.vue'
 
 <style scoped>
 header {
-  line-height: 1.5;
+  line-height: 1;
   max-height: 100vh;
 }
 
@@ -32,13 +35,14 @@ header {
 
 nav {
   width: 100%;
-  font-size: 12px;
+  font-size: 0.875rem;
   text-align: center;
   margin-top: 2rem;
 }
 
 nav a.router-link-exact-active {
-  color: var(--color-text);
+  color: var(--color-text-muted);
+  transition: background-color 0.2s;
 }
 
 nav a.router-link-exact-active:hover {

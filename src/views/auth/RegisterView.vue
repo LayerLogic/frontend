@@ -39,6 +39,8 @@
 </template>
 
 <script>
+import { resgister } from '@/api/user'
+
 export default {
   name: 'RegisterView',
   data() {
@@ -49,11 +51,23 @@ export default {
     }
   },
   methods: {
-    handleRegisteration() {
+    async handleRegisteration() {
       if (!this.confirmPasswordMatch()) {
         return
       }
-      console.log('Register attempt:', this.email, this.password)
+      const data = {
+        email: this.email,
+        password: this.password,
+        username: this.email.split('@')[0],
+        role: 'customer',
+      }
+      console.log('Register attempt:', data)
+      try {
+        const res = await resgister(data)
+        console.log('res', res)
+      } catch (error) {
+        console.error(error)
+      }
     },
     confirmPasswordMatch() {
       if (this.password !== this.confirmPassword) {

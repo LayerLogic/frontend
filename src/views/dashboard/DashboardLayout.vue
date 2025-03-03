@@ -1,29 +1,45 @@
 <template>
-  <div class="dashboard">
-    <div class="dashboard-content">
-      <p>Welcome to your dashboard!</p>
-    </div>
+  <div class="dashboard-container">
+    <component :is="currentRole" />
+    <button @click="handleLogout">Logout</button>
   </div>
-  <RouterView />
 </template>
 
 <script>
 import { RouterView } from 'vue-router'
+import ResearcherView from './researcher/ResearcherView.vue'
+import AdminView from './admin/AdminView.vue'
+import CustomerView from './customer/CustomerView.vue'
+import { logout } from '@/api/user'
 
 export default {
   name: 'DashboardLayout',
   components: {
     RouterView,
+    ResearcherView,
+    AdminView,
+    CustomerView,
+  },
+  data() {
+    return {
+      currentRole: 'customerView',
+    }
+  },
+  methods: {
+    async handleLogout() {
+      const res = await logout()
+      console.log('res', res)
+    },
   },
 }
 </script>
 
 <style scoped>
-.dashboard {
+.root {
   padding: 20px;
 }
 
-.dashboard-content {
+.root-content {
   margin-bottom: 20px;
 }
 </style>

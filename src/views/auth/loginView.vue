@@ -23,12 +23,13 @@
         <input type="password" id="password" v-model="password" required class="form-input" />
       </div>
       <button type="submit" class="login-button">Login</button>
+      <button class="login-button" @click="getUserProfile_">user info</button>
     </form>
   </div>
 </template>
 
 <script>
-import { setToken } from '@/utils/cookies'
+import { getInfo, login } from '@/api/user'
 
 export default {
   name: 'LoginView',
@@ -39,9 +40,28 @@ export default {
     }
   },
   methods: {
-    handleLogin() {
-      setToken('fake-token')
+    async handleLogin() {
+      const data = {
+        email: this.email,
+        password: this.password,
+      }
+      try {
+        const res = await login(data)
+        const token = res.headers
+        console.log('token', token)
+        console.log('res', res)
+      } catch (error) {
+        console.error(error)
+      }
       console.log('Login attempt:', this.email, this.password)
+    },
+    async getUserProfile_() {
+      try {
+        const res = await getInfo()
+        console.log('res profile', res)
+      } catch (error) {
+        console.error(error)
+      }
     },
   },
 }

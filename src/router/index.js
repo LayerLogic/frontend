@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '@/views/auth/loginView.vue'
 import AuthLayout from '@/views/auth/AuthLayout.vue'
-import { getToken } from '@/utils/cookies'
+import LoginView from '@/views/auth/loginView.vue'
+import DashboardLayout from '@/views/dashboard/dashboardLayout.vue'
 
-const router = createRouter({
+export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
@@ -19,48 +19,19 @@ const router = createRouter({
         {
           path: '/auth/register',
           name: 'register',
-          component: import('@/views/auth/RegisterView.vue'),
+          component: () => import('@/views/auth/RegisterView.vue'),
         },
         {
           path: '',
+          name: 'home_redirect',
           redirect: { name: 'login' },
         },
       ],
     },
     {
       path: '/dashboard',
+      component: DashboardLayout,
       name: 'dashboard',
-      component: import('@/views/dashboard/DashboardLayout.vue'),
-      children: [
-        {
-          path: '/dashboard/admin',
-          name: 'admin',
-          component: import('@/views/dashboard/admin/AdminView.vue'),
-        },
-        {
-          path: '/dashboard/researcher',
-          name: 'researcher',
-          component: import('@/views/dashboard/researcher/ResearcherView.vue'),
-        },
-        {
-          path: '/dashboard/customer',
-          name: 'customer',
-          component: import('@/views/dashboard/customer/CustomerView.vue'),
-        },
-      ],
-      beforeEnter: (to, _, next) => {
-        const token = getToken()
-        if (token) {
-          next()
-        } else {
-          next({
-            name: 'login',
-            query: {
-              from: to.name,
-            },
-          })
-        }
-      },
     },
   ],
 })

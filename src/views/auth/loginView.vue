@@ -28,7 +28,8 @@
 </template>
 
 <script>
-import { login } from '@/api/user'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 
 export default {
   name: 'LoginView',
@@ -39,14 +40,15 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['loginUser']),
     async handleLogin() {
       const data = {
         email: this.email,
         password: this.password,
       }
       try {
-        const res = await login(data)
-        console.log('res', res)
+        const res = await this.loginUser(data)
+        this.$router.push({ name: `${res.user.role}_dashboard` })
       } catch (error) {
         console.error(error)
       }

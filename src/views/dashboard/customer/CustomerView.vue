@@ -20,7 +20,7 @@ export default {
 
 <style scoped>
 .customer-view {
-  padding: 20px;
+  padding-bottom: 20px;
 }
 
 .content {

@@ -39,7 +39,8 @@
 </template>
 
 <script>
-import { resgister } from '@/api/user'
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 
 export default {
   name: 'RegisterView',
@@ -51,6 +52,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(useUserStore, ['registerUser']),
     async handleRegisteration() {
       if (!this.confirmPasswordMatch()) {
         return
@@ -61,10 +63,9 @@ export default {
         username: this.email.split('@')[0],
         role: 'customer',
       }
-      console.log('Register attempt:', data)
       try {
-        const res = await resgister(data)
-        console.log('res', res)
+        const res = await this.registerUser(data)
+        this.$router.push({ name: `${res.user.role}_dashboard` })
       } catch (error) {
         console.error(error)
       }

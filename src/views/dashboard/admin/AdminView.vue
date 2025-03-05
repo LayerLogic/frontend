@@ -20,7 +20,7 @@ export default {
 
 <style scoped>
 .admin-view {
-  padding: 20px;
+  padding-bottom: 20px;
 }
 
 .content {

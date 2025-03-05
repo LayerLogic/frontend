@@ -20,10 +20,10 @@ export default {
 
 <style scoped>
 .researcher-view {
-  padding: 20px;
+  padding-bottom: 20px;
 }
 
 .content {
-  margin-top: 20px;
+  margin-top: 0px;
 }
 </style>

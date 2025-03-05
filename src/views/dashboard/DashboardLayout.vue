@@ -1,45 +1,57 @@
 <template>
   <div class="dashboard-container">
-    <component :is="currentRole" />
+    <RouterView />
     <button @click="handleLogout">Logout</button>
   </div>
 </template>
 
 <script>
+import { useUserStore } from '@/store/user'
+import { mapActions } from 'pinia'
 import { RouterView } from 'vue-router'
-import ResearcherView from './researcher/ResearcherView.vue'
-import AdminView from './admin/AdminView.vue'
-import CustomerView from './customer/CustomerView.vue'
-import { logout } from '@/api/user'
 
 export default {
   name: 'DashboardLayout',
   components: {
     RouterView,
-    ResearcherView,
-    AdminView,
-    CustomerView,
   },
   data() {
-    return {
-      currentRole: 'customerView',
-    }
+    return {}
   },
   methods: {
+    ...mapActions(useUserStore, ['logoutUser']),
     async handleLogout() {
-      const res = await logout()
-      console.log('res', res)
+      try {
+        await this.logoutUser()
+        this.$router.push('/auth/login')
+      } catch (error) {
+        console.error('Error during logout:', error)
+      }
     },
   },
 }
 </script>
 
 <style scoped>
-.root {
+.dashboard-container {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.root-content {
-  margin-bottom: 20px;
+button {
+  max-width: 100px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #d32f2f;
 }
 </style>

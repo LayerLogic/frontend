@@ -1,19 +1,16 @@
-import request from '@/services/axios'
+import service from '@/services/axios'
 
 /**
+ * @typedef {'customer' | 'researcher' | 'admin'} UserRole
  * @param {{
  * username: string,
  * email: string,
  * password: string,
- * role: string
+ * role: UserRole
  * }} data
  */
-export function resgister(data) {
-  return request({
-    url: '/auth/register',
-    method: 'post',
-    data,
-  })
+export function register(data) {
+  return service.post('/auth/register', data)
 }
 
 /**
@@ -23,24 +20,13 @@ export function resgister(data) {
  * }} data
  */
 export function login(data) {
-  return request({
-    url: '/auth/login',
-    method: 'post',
-    data,
-  })
-}
-
-export function getInfo() {
-  return request({
-    url: '/auth/profile',
-    method: 'get',
-  })
+  return service.post('/auth/login', data)
 }
 
 export function logout() {
-  console.log('called')
-  return request({
-    url: '/auth/logout',
-    method: 'post',
-  })
+  return service.post('/auth/logout')
+}
+
+export function getProfile() {
+  return service.get('/auth/profile')
 }

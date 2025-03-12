@@ -1,6 +1,6 @@
 import AppLayout from '@/views/app/AppLayout.vue'
 import DashboardLayout from '@/views/app/dashboard/DashboardLayout.vue'
-import TestLayout from '@/views/app/testing/TestLayout.vue'
+import CreateTrailView from '@/views/app/trail/CreateTrailView.vue'
 
 const appRoutes = {
   path: '/app',
@@ -15,10 +15,10 @@ const appRoutes = {
       meta: { title: 'Dashboard', showOnSidebar: true },
     },
     {
-      path: 'create-test',
-      component: TestLayout,
-      name: 'create_test',
-      meta: { title: 'Create test', showOnSidebar: true },
+      path: 'create-trail',
+      component: CreateTrailView,
+      name: 'create_trail',
+      meta: { title: 'Create Trail', showOnSidebar: true },
     },
   ],
 }

@@ -53,3 +53,117 @@ a,
     padding: 0 2rem;
   } */
 }
+
+/* Base button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  height: 38px;
+}
+
+/* Primary button styles */
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--vt-c-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 10px rgba(124, 25, 246, 0.2);
+  opacity: 0.85;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(124, 25, 246, 0.2);
+}
+
+/* Secondary button styles */
+.btn-secondary {
+  background-color: rgba(124, 25, 246, 0.2);
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(124, 25, 246, 0.15);
+  box-shadow: 0 4px 10px rgba(124, 25, 246, 0.1);
+}
+
+.btn-secondary:active {
+  box-shadow: 0 2px 4px rgba(124, 25, 246, 0.15);
+}
+
+/* Outline button styles */
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-border);
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 12px;
+  height: 30px;
+}
+
+.btn-lg {
+  padding: 10px 20px;
+  font-size: 16px;
+  height: 46px;
+}
+
+/* Button with icon */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-icon svg,
+.btn-icon img {
+  margin-right: 8px;
+}
+
+.btn-icon-only {
+  padding: 8px;
+  width: 38px;
+  height: 38px;
+}
+
+/* Button group */
+.btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .btn {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .btn-outline {
+    color: var(--color-text, #f8f8f8);
+  }
+}

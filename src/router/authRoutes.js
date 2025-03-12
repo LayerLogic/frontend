@@ -13,14 +13,6 @@ const authRoutes = {
       name: 'login',
       component: LoginView,
       meta: { title: 'LayerLogic | Login' },
-      children: [
-        {
-          path: '/testtttt',
-          name: 'registerssss',
-          component: RegisterView,
-          meta: { title: 'LayerLogic | Register' },
-        },
-      ],
     },
     {
       path: '/auth/register',

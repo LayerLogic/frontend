@@ -35,8 +35,8 @@ export default {
 
 <style scoped>
 .theme-toggle {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
   border: 2px solid var(--color-border);
   border-radius: 50%;
   cursor: pointer;

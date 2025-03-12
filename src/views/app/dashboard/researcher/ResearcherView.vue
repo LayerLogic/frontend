@@ -1,6 +1,6 @@
 <template>
   <div class="researcher-view">
-    <h1>Hello, Researcher!</h1>
+    <h1>Hello, {{ username }}!</h1>
     <div class="content">
       <p>Welcome to your research dashboard</p>
     </div>
@@ -10,10 +10,14 @@
 <script>
 export default {
   name: 'ResearcherView',
+  props: {
+    username: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
-    return {
-      // Add data properties here
-    }
+    return {}
   },
 }
 </script>

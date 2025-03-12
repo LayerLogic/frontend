@@ -1,8 +1,8 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import GreetingMsg from '@/components/landing/GreetingMsg.vue'
-import ToggleTheme from '@/components/ToggleTheme.vue'
-import LayerLogicLogo from '@/components/LayerLogicLogo.vue'
+import ToggleTheme from '@/components/ui/ToggleTheme.vue'
+import LayerLogicLogo from '@/components/ui/LayerLogicLogo.vue'
 
 export default {
   name: 'AuthLayout',
@@ -17,23 +17,32 @@ export default {
 </script>
 
 <template>
-  <header>
-    <LayerLogicLogo class="logo" width="160" hight="160" />
+  <section class="auth-container">
+    <header>
+      <LayerLogicLogo class="logo" width="160" hight="160" />
 
-    <div class="wrapper">
-      <GreetingMsg msg="LayerLogic" />
-      <ToggleTheme />
+      <div class="wrapper">
+        <GreetingMsg msg="LayerLogic" />
+        <ToggleTheme />
 
-      <nav>
-        <RouterLink to="/auth/login">Login</RouterLink>
-        <RouterLink to="/auth/register">Register</RouterLink>
-      </nav>
-    </div>
-  </header>
-  <RouterView />
+        <nav>
+          <RouterLink to="/auth/login">Login</RouterLink>
+          <RouterLink to="/auth/register">Register</RouterLink>
+        </nav>
+      </div>
+    </header>
+    <RouterView />
+  </section>
 </template>
 
 <style scoped>
+.auth-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 2rem;
+  max-width: 1024px;
+  margin: 0 auto;
+}
 header {
   line-height: 1;
   max-height: 100vh;

@@ -1,13 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthLayout from '@/views/auth/AuthLayout.vue'
-import LoginView from '@/views/auth/loginView.vue'
-import DashboardLayout from '@/views/dashboard/DashboardLayout.vue'
 import { useUserStore } from '@/store/user'
+import { useSidebarStore } from '@/store/sidebar'
 import { getUserIdCookie } from '@/services/cookies'
-import AdminView from '@/views/dashboard/admin/AdminView.vue'
-import ResearcherView from '@/views/dashboard/researcher/ResearcherView.vue'
-import CustomerView from '@/views/dashboard/customer/CustomerView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
+import authRoutes from './authRoutes'
+import appRoutes from './appRoutes'
 
 // valid roles and role hierarchy
 const ROLES = {
@@ -34,73 +31,24 @@ const canAccessRoute = (userRole, requiredRoles) => {
   return requiredRoles.some((role) => allowedRoles.includes(role))
 }
 
+// Helper function to extract paths by recursion
+const extractPaths = (router) => {
+  const paths = [router.path]
+  if (router.children && router.children.length > 0) {
+    for (const child of router.children) {
+      const childPaths = extractPaths(child)
+      paths.push(...childPaths)
+    }
+  }
+
+  return paths
+}
+
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: AuthLayout,
-      children: [
-        {
-          path: '/auth/login',
-          name: 'login',
-          component: LoginView,
-          meta: { title: 'LayerLogic | Login' },
-        },
-        {
-          path: '/auth/register',
-          name: 'register',
-          component: () => import('@/views/auth/RegisterView.vue'),
-          meta: { title: 'LayerLogic | Register' },
-        },
-        {
-          path: '',
-          name: 'home_redirect',
-          redirect: { name: 'login' },
-        },
-        {
-          path: '/auth',
-          name: 'auth_redirect',
-          redirect: { name: 'login' },
-        },
-      ],
-    },
-    {
-      path: '/dashboard',
-      component: DashboardLayout,
-      name: 'dashboard',
-      meta: { title: 'Dashboard' },
-      children: [
-        {
-          path: '/dashboard/admin', // Fixed typo
-          component: AdminView,
-          name: 'admin_dashboard',
-          meta: {
-            title: 'Dashboard | Admin',
-            roles: [ROLES.ADMIN], // Use constants instead of strings
-          },
-        },
-        {
-          path: '/dashboard/researcher', // Fixed typo
-          component: ResearcherView,
-          name: 'researcher_dashboard',
-          meta: {
-            title: 'Dashboard | Researcher',
-            roles: [ROLES.ADMIN, ROLES.RESEARCHER], // Using role hierarchy
-          },
-        },
-        {
-          path: '',
-          component: CustomerView,
-          name: 'customer_dashboard',
-          meta: {
-            title: 'Dashboard',
-            roles: [ROLES.ADMIN, ROLES.CUSTOMER], // Using role hierarchy
-          },
-        },
-      ],
-    },
+    authRoutes,
+    appRoutes,
     {
       path: '/:pathMatch(.*)*',
       name: 'not_found',
@@ -112,10 +60,18 @@ export const router = createRouter({
   ],
 })
 
-const publicURLs = ['/', '/auth/login', '/auth/register']
+const publicURLs = [...extractPaths(authRoutes)]
 router.beforeEach(async (to, __, next) => {
   const userStore = useUserStore()
+  const sidebarStore = useSidebarStore()
   const userId = getUserIdCookie()
+
+  // setting routes in sidebar store
+  const navGroup = sidebarStore.navigationGroups
+  if (navGroup.length === 0) {
+    const routes = router.getRoutes()
+    sidebarStore.setRoutes(routes)
+  }
 
   // Helper function to handle authentication errors
   const handleAuthError = (error) => {
@@ -148,7 +104,7 @@ router.beforeEach(async (to, __, next) => {
 
         // If user is on public route, redirect to their dashboard
         if (!requiresAuth) {
-          return next({ name: `${userStore.role}_dashboard` })
+          return next({ name: 'dashboard' })
         }
 
         // if user role dosen't exist in meta.roles run this
@@ -168,14 +124,11 @@ router.beforeEach(async (to, __, next) => {
 
       // Redirect authenticated users away from public pages
       if (!requiresAuth) {
-        return next({ name: `${userStore.role}_dashboard` })
+        return next({ name: 'dashboard' })
       }
 
       if (to.meta.roles && !canAccessRoute(userStore.role, to.meta.roles)) {
-        console.warn(
-          `User with role ${userStore.role} attempted to access restricted route: ${to.path}`,
-        )
-        return next({ name: 'not_found' })
+        return handleUnauthorized(userStore.role, to.path)
       }
     }
 

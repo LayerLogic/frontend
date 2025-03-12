@@ -47,8 +47,8 @@ export default {
         password: this.password,
       }
       try {
-        const res = await this.loginUser(data)
-        this.$router.push({ name: `${res.user.role}_dashboard` })
+        await this.loginUser(data)
+        this.$router.push({ name: 'dashboard' })
       } catch (error) {
         console.error(error)
       }

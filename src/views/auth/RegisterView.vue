@@ -64,8 +64,8 @@ export default {
         role: 'customer',
       }
       try {
-        const res = await this.registerUser(data)
-        this.$router.push({ name: `${res.user.role}_dashboard` })
+        await this.registerUser(data)
+        this.$router.push({ name: 'dashboard' })
       } catch (error) {
         console.error(error)
       }

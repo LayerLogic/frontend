@@ -1,15 +1,21 @@
 <template>
-  <div class="customer-view">
-    <h1>Hello, Customer!</h1>
+  <div class="admin-view">
+    <h1>Hello, {{ username }}!</h1>
     <div class="content">
-      <p>Welcome to your customer dashboard</p>
+      <p>Welcome to your Admin dashboard</p>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'CustomerView',
+  name: 'AdminView',
+  props: {
+    username: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       // Add data properties here
@@ -19,7 +25,7 @@ export default {
 </script>
 
 <style scoped>
-.customer-view {
+.admin-view {
   padding-bottom: 20px;
 }
 

@@ -59,10 +59,10 @@ export default {
 
 <style scoped>
 .login-container {
-  min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
+  padding: 2rem;
 }
 
 .login-form {

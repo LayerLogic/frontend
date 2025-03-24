@@ -38,7 +38,10 @@ export default {
 <style scoped>
 .auth-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
+  align-content: center;
+  justify-content: center;
+  height: 100vh;
   padding: 0 2rem;
   max-width: 1024px;
   margin: 0 auto;
@@ -50,7 +53,7 @@ header {
 
 .logo {
   display: block;
-  margin: 0 auto 2rem;
+  margin: 0 auto;
 }
 
 nav {
@@ -80,6 +83,11 @@ nav a:first-of-type {
 }
 
 @media (min-width: 1024px) {
+  .auth-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
   header {
     display: flex;
     place-items: center;

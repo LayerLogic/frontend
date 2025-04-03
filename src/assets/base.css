@@ -1,8 +1,10 @@
 :root {
   /* Base colors */
   --vt-c-darkest-purple: #230059;
+  --vt-c-darkest-purple-rgb: 35, 0, 89;
   --vt-c-dark-purple: #3b0085;
   --vt-c-light-purple: #7c19f6;
+  --vt-c-light-purple-rgb: 124, 25, 246;
   --vt-c-lightest-purple: #c497fb;
 
   --vt-c-warning: #dc8b5a;
@@ -19,9 +21,9 @@
   --vt-c-black-mute: hsl(240 3.7% 15.9%);
 
   /* Dividers */
-  --vt-c-divider-light-1: hsl(240 3.7% 15.9%/ 0.019); /* Based on background */
-  --vt-c-divider-light-2: hsl(240 3.7% 15.9%/ 0.12); /* Based on background */
-  --vt-c-divider-dark-1: hsl(240 3.7% 15.9% / 0.5); /* Based on dark background */
+  --vt-c-divider-light-1: hsl(240 3.7% 15.9%/ 0.19); /* Based on background */
+  --vt-c-divider-light-2: hsl(240 3.7% 15.9%/ 0.15); /* Based on background */
+  --vt-c-divider-dark-1: hsl(240 3.7% 15.9% / 1); /* Based on dark background */
   --vt-c-divider-dark-2: hsl(240 3.7% 15.9% / 0.8); /* Based on dark background */
 
   /* Text colors */
@@ -44,6 +46,7 @@
   --color-text: var(--vt-c-text-light-1);
 
   --color-primary: var(--vt-c-light-purple);
+  --color-primary-rgb: var(--vt-c-light-purple-rgb);
   --color-primary-dark: var(--vt-c-dark-purple);
   --color-primary-light: var(--vt-c-lightest-purple);
   --color-warning: var(--vt-c-warning);

@@ -8,6 +8,8 @@
       @focus="isEditorFocused = true"
       @blur="isEditorFocused = false"
       :placeholder="placeholder"
+      v-html="initialContent"
+      v-once
     ></div>
   </div>
 </template>
@@ -29,6 +31,19 @@ export default {
       default: '',
     },
   },
+  emits: ['update:modelValue'],
+  computed: {
+    editorContent() {
+      return this.$refs.editor ? this.$refs.editor.innerHTML : ''
+    },
+  },
+  watch: {
+    modelValue(newValue) {
+      if (this.$refs.editor && this.$refs.editor.innerHTML !== newValue) {
+        this.$refs.editor.innerHTML = newValue
+      }
+    },
+  },
   data() {
     return {
       content: '',
@@ -44,26 +59,7 @@ export default {
   methods: {
     handleInput() {
       this.content = this.$refs.editor.innerHTML
-      this.emitChange()
-    },
-    emitChange() {
-      this.$emit('change', {
-        content: this.content,
-      })
       this.$emit('update:modelValue', this.content)
-    },
-    getContent() {
-      return {
-        content: this.content,
-      }
-    },
-    setContent(title, content) {
-      this.content = content || ''
-      this.$refs.editor.innerHTML = this.content
-    },
-    clearContent() {
-      this.content = ''
-      this.$refs.editor.innerHTML = ''
     },
   },
 }
@@ -74,7 +70,7 @@ export default {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: var(--color-background);
   overflow: hidden;
   transition:

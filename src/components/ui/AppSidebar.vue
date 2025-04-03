@@ -46,7 +46,7 @@
 
       <div v-if="isCollapsed" class="create-test-collapse">
         <button class="collapse-button">
-          <RouterLink to="/app/create-test" class="nav-link">
+          <RouterLink to="/app/create-trail" class="nav-link">
             <span class="nav-label">+</span>
           </RouterLink>
         </button>

@@ -1,5 +1,5 @@
 import AuthLayout from '@/views/auth/AuthLayout.vue'
-import LoginView from '@/views/auth/loginView.vue'
+import LoginView from '@/views/auth/LoginView.vue'
 import RegisterView from '@/views/auth/RegisterView.vue'
 
 const authRoutes = {

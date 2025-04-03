@@ -319,7 +319,6 @@ export default {
 .form-input-container {
   display: flex;
   flex-direction: column;
-  margin-bottom: 32px;
   width: 100%;
 }
 

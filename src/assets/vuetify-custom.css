@@ -1,0 +1,109 @@
+:root {
+  --v-theme-primary: var(--vt-c-light-purple);
+  --v-theme-primary-darken-1: var(--vt-c-dark-purple);
+  --v-theme-primary-lighten-1: var(--vt-c-lightest-purple);
+  --v-theme-secondary: var(--vt-c-dark-purple);
+  --v-theme-accent: var(--vt-c-lightest-purple);
+
+  --v-theme-surface: var(--color-background);
+  --v-theme-surface-variant: var(--color-background-soft);
+  --v-theme-background: var(--color-background);
+
+  --v-theme-error: #ff5252;
+  --v-theme-warning: var(--vt-c-warning);
+  --v-theme-info: #2196f3;
+  --v-theme-success: #4caf50;
+
+  --v-theme-on-primary: var(--vt-c-white);
+  --v-theme-on-secondary: var(--vt-c-white);
+  --v-theme-on-surface: var(--color-text);
+  --v-theme-on-background: var(--color-text);
+
+  --v-border-color: var(--color-border);
+  --v-theme-overlay-multiplier: 1;
+}
+
+/* Apply overrides to specific Vuetify components */
+.v-card {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+}
+
+.v-toolbar {
+  background-color: var(--color-background-soft) !important;
+  color: var(--color-text) !important;
+}
+
+.v-btn--variant-text {
+  color: var(--color-text) !important;
+}
+
+.v-list {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+}
+
+.v-list-item:hover {
+  background-color: var(--color-background-soft) !important;
+}
+
+.v-menu__content {
+  background-color: var(--color-background) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.v-divider {
+  border-color: var(--color-border) !important;
+}
+
+.v-table {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+}
+
+.v-data-table-header {
+  background-color: var(--color-background-soft) !important;
+}
+
+.v-divider {
+  border-style: solid !important;
+  border-width: 1px 0 0 0 !important;
+  border-color: var(--color-border) !important;
+  opacity: 0.8 !important;
+}
+
+.v-divider.v-divider--vertical {
+  border-width: 0 0 0 1px !important;
+  height: auto !important;
+}
+
+.v-dialog > .v-card {
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+}
+
+.dark-mode .v-application {
+  --v-theme-primary: var(--vt-c-light-purple);
+  --v-theme-primary-darken-1: var(--vt-c-darkest-purple);
+  --v-theme-primary-lighten-1: var(--vt-c-lightest-purple);
+  --v-theme-background: var(--color-background);
+  --v-theme-surface: var(--color-background);
+  --v-theme-on-surface: var(--color-text);
+  --v-border-color: var(--color-border);
+}
+
+.light-mode .v-application {
+  --v-theme-primary: var(--vt-c-light-purple);
+  --v-theme-primary-darken-1: var(--vt-c-dark-purple);
+  --v-theme-background: var(--color-background);
+  --v-theme-surface: var(--color-background);
+  --v-theme-on-surface: var(--color-text);
+  --v-border-color: var(--color-border);
+}
+
+:root:not(.dark-mode) .v-list-item:hover,
+.light-mode .v-list-item:hover {
+  background-color: var(--color-border) !important;
+}

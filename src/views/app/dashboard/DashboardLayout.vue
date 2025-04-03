@@ -2,7 +2,7 @@
   <section class="dashboard-wrapper">
     <div class="dashboard-container">
       <component :is="currentRole" :username="username" />
-      <button @click="handleLogout">Logout</button>
+      <button @click="handleLogout" class="btn">Logout</button>
     </div>
   </section>
 </template>
@@ -68,18 +68,12 @@ export default {
   gap: 20px;
 }
 
-button {
+.btn {
   max-width: 100px;
-  padding: 8px 16px;
   background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
 }
 
-button:hover {
+.btn:hover {
   background-color: #d32f2f;
 }
 </style>

@@ -33,7 +33,7 @@
         />
       </div>
 
-      <button type="submit" class="register-button">Register</button>
+      <button type="submit" class="btn btn-primary register-button">Register</button>
     </form>
   </div>
 </template>
@@ -92,12 +92,12 @@ export default {
 
 .register-form {
   padding: 1.5rem;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   background-color: var(--color-background);
   box-shadow: 0 0 20rem -3.3rem var(--color-primary);
   width: 100%;
   max-width: 24rem;
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
   display: grid;
   gap: 1rem;
 }
@@ -134,7 +134,7 @@ export default {
 .form-input {
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: 0.5rem;
   background-color: transparent;
   color: var(--color-text);
@@ -146,7 +146,6 @@ export default {
 }
 
 .register-button {
-  width: 100%;
   background-color: var(--vt-c-light-purple);
   color: var(--vt-c-white);
   padding: 0.5rem 1rem;
@@ -154,7 +153,10 @@ export default {
   border: none;
   cursor: pointer;
   transition: opacity 0.2s;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+  height: auto !important;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
 .register-button:hover {

@@ -2,13 +2,12 @@
   <section class="dashboard-wrapper">
     <div class="dashboard-container">
       <component :is="currentRole" :username="username" />
-      <button @click="handleLogout" class="btn">Logout</button>
     </div>
   </section>
 </template>
 
 <script>
-import { mapActions, mapState } from 'pinia'
+import { mapState } from 'pinia'
 import { RouterView } from 'vue-router'
 
 import { useUserStore } from '@/store/user'
@@ -41,17 +40,6 @@ export default {
       this.currentRole = 'CustomerView'
     }
   },
-  methods: {
-    ...mapActions(useUserStore, ['logoutUser']),
-    async handleLogout() {
-      try {
-        await this.logoutUser()
-        this.$router.push('/auth/login')
-      } catch (error) {
-        console.error('Error during logout:', error)
-      }
-    },
-  },
 }
 </script>
 
@@ -66,14 +54,5 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.btn {
-  max-width: 100px;
-  background-color: #f44336;
-}
-
-.btn:hover {
-  background-color: #d32f2f;
 }
 </style>

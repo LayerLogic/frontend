@@ -3,7 +3,7 @@
     :headers="headers"
     :items="trials"
     :items-per-page="5"
-    :hide-default-footer="trials.length < 5"
+    :hide-default-footer="trials.length < 10"
     item-value="_id"
     show-expand
   >
@@ -25,15 +25,17 @@
       {{ formatDate(item.createdAt) }}
     </template>
 
-    <template #[`item.actions`]="{ item }">
-      <ActionMenu @edit="$emit('edit', item)" @delete="$emit('delete', item)" />
-    </template>
-
     <template v-slot:[`item.data-table-expand`]="{ internalItem, isExpanded, toggleExpand }">
-      <button class="btn btn-outline" @click="toggleExpand(internalItem)">
-        {{ isExpanded(internalItem) ? 'Collapse' : 'More info' }}
-        <v-icon>{{ isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-      </button>
+      <div class="actions">
+        <button class="btn btn-outline" @click="toggleExpand(internalItem)">
+          {{ isExpanded(internalItem) ? 'Collapse' : 'More info' }}
+          <v-icon>{{ isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+        </button>
+        <ActionMenu
+          @edit="$emit('edit', internalItem.raw)"
+          @delete="$emit('delete', internalItem.raw)"
+        />
+      </div>
     </template>
 
     <template v-slot:expanded-row="{ columns, item }">
@@ -83,7 +85,6 @@ export default {
         { title: 'Name', key: 'name', align: 'start' },
         { title: 'Tags', key: 'tags' },
         { title: 'Created at', key: 'createdAt' },
-        { title: 'Actions', key: 'actions', align: 'center', sortable: false },
       ],
     }
   },
@@ -126,6 +127,13 @@ export default {
 
 .v-toolbar-title {
   font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
 }
 
 :deep(.v-data-table__td) {

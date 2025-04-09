@@ -84,7 +84,7 @@
   color: var(--color-text) !important;
 }
 
-.dark-mode .v-application {
+/* .dark-mode .v-application {
   --v-theme-primary: var(--vt-c-light-purple);
   --v-theme-primary-darken-1: var(--vt-c-darkest-purple);
   --v-theme-primary-lighten-1: var(--vt-c-lightest-purple);
@@ -92,18 +92,18 @@
   --v-theme-surface: var(--color-background);
   --v-theme-on-surface: var(--color-text);
   --v-border-color: var(--color-border);
-}
+} */
 
-.light-mode .v-application {
+/* .light-mode .v-application {
   --v-theme-primary: var(--vt-c-light-purple);
   --v-theme-primary-darken-1: var(--vt-c-dark-purple);
   --v-theme-background: var(--color-background);
   --v-theme-surface: var(--color-background);
   --v-theme-on-surface: var(--color-text);
   --v-border-color: var(--color-border);
-}
+} */
 
-:root:not(.dark-mode) .v-list-item:hover,
+/* :root:not(.dark-mode) .v-list-item:hover,
 .light-mode .v-list-item:hover {
   background-color: var(--color-border) !important;
-}
+} */

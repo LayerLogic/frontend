@@ -125,9 +125,8 @@ a,
 }
 
 .btn-icon-only {
-  padding: 8px;
-  width: 38px;
-  height: 38px;
+  padding: 14px;
+  width: 26px;
   opacity: 0.75;
 }
 
@@ -150,8 +149,8 @@ a,
 }
 
 /* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   .btn-outline {
     color: var(--color-text, #f8f8f8);
   }
-}
+} */

@@ -31,7 +31,7 @@ h1 {
 
 h2 {
   font-size: 2rem;
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   color: #2c3e50;
 }
 
@@ -42,7 +42,7 @@ p {
 
 .home-link {
   padding: 0.8rem 1.6rem;
-  background-color: #42b983;
+  background-color: var(--color-primary);
   color: white;
   text-decoration: none;
   border-radius: 4px;
@@ -50,6 +50,6 @@ p {
 }
 
 .home-link:hover {
-  background-color: #3aa876;
+  background-color: var(--color-primary-dark);
 }
 </style>

@@ -11,7 +11,7 @@ const appRoutes = {
       path: 'dashboard',
       component: DashboardLayout,
       name: 'dashboard',
-      meta: { title: 'Dashboard', showOnSidebar: true },
+      meta: { title: 'Dashboard', showOnSidebar: true, icon: 'mdi-view-dashboard-outline' },
     },
   ],
 }

@@ -1,7 +1,6 @@
 <template>
   <section class="app-wrapper">
     <AppSidebar
-      :appName="appName"
       :username="username"
       :role="role"
       :currentPath="$route.path"
@@ -30,7 +29,6 @@ export default {
   },
   data() {
     return {
-      appName: 'LayerLogic',
       currentRole: '',
     }
   },

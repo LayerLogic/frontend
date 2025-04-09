@@ -1,9 +1,6 @@
 <template>
   <div class="researcher-view">
-    <h1>Hello, {{ username }}!</h1>
     <div class="content">
-      <p>Welcome to your research dashboard</p>
-
       <!-- Trials Table -->
       <TrialsTable
         :trials="trials"
@@ -147,9 +144,5 @@ export default {
 <style scoped>
 .researcher-view {
   padding-bottom: 20px;
-}
-
-.content {
-  margin-top: 0;
 }
 </style>

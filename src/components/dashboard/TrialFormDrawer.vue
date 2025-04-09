@@ -4,16 +4,15 @@
       <v-toolbar flat>
         <v-toolbar-title>
           {{ title }}
-          <code v-if="trial"> {{ trial.name }} </code>
+          <code v-if="trial"> "{{ trial.name }}" </code>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn icon @click="handleClose">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
-      <v-divider></v-divider>
 
-      <form @submit.prevent="handleSubmit" class="edit-form">
+      <form @submit.prevent="handleSubmit" class="form" ref="form">
         <div class="input-form">
           <InputField
             id="name"
@@ -47,9 +46,6 @@
             />
           </div>
         </div>
-
-        <v-divider></v-divider>
-
         <div class="button-container">
           <button class="btn btn-outline" @click="handleClose" type="button">Cancel</button>
           <button class="btn btn-primary" type="submit">Save</button>
@@ -158,19 +154,43 @@ export default {
 <style scoped>
 .v-navigation-drawer {
   background-color: var(--color-background) !important;
+  box-shadow: var(--shadow-lg) !important;
+  height: 100vh !important;
 }
 
-.edit-form {
+.v-navigation-drawer__scrim {
+  background-color: var(--color-background) !important;
+  opacity: 0.75 !important;
+}
+
+.v-navigation-drawer__content {
+  display: flex !important;
+}
+
+.v-toolbar {
+  background-color: var(--color-background) !important;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.v-toolbar-title {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.form {
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .input-form {
-  padding: 16px 10px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 20px;
+  margin-bottom: 60px;
 }
 
 .input-group {
@@ -180,9 +200,14 @@ export default {
 }
 
 .button-container {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
   display: flex;
   justify-content: flex-end;
-  padding: 6px 10px;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-background);
+  padding: 20px;
   gap: 8px;
 }
 

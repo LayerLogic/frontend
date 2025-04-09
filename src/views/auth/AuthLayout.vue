@@ -1,7 +1,6 @@
 <script>
 import { RouterLink, RouterView } from 'vue-router'
 import GreetingMsg from '@/components/landing/GreetingMsg.vue'
-import ToggleTheme from '@/components/ui/ToggleTheme.vue'
 import LayerLogicLogo from '@/components/ui/LayerLogicLogo.vue'
 
 export default {
@@ -10,7 +9,6 @@ export default {
     RouterLink,
     RouterView,
     GreetingMsg,
-    ToggleTheme,
     LayerLogicLogo,
   },
 }
@@ -23,7 +21,6 @@ export default {
 
       <div class="wrapper">
         <GreetingMsg msg="LayerLogic" />
-        <ToggleTheme />
 
         <nav>
           <RouterLink to="/auth/login">Login</RouterLink>

@@ -31,6 +31,10 @@
   --vt-c-text-light-2: hsl(240 3.8% 46.1%); /* Muted foreground for light mode */
   --vt-c-text-dark-1: var(--vt-c-white-mute);
   --vt-c-text-dark-2: hsl(240 5% 64.9%); /* Muted foreground for dark mode */
+
+  --vt-c-shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --vt-c-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --vt-c-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 /* semantic color variables for this project */
@@ -52,9 +56,12 @@
   --color-warning: var(--vt-c-warning);
 
   --section-gap: 160px;
+  --shadow-sm: var(--vt-c-shadow-sm);
+  --shadow: var(--vt-c-shadow);
+  --shadow-lg: var(--vt-c-shadow-lg);
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   :root {
     --color-background: hsl(240 10% 3.9%);
     --color-background-soft: var(--vt-c-black-soft);
@@ -71,7 +78,7 @@
     --color-primary-light: var(--vt-c-lightest-purple);
     --color-warning: var(--vt-c-warning);
   }
-}
+} */
 
 /* Near the end of your CSS, update or add this */
 .light-mode {
@@ -93,7 +100,7 @@
 }
 
 /* You can add this for forced dark mode class */
-.dark-mode {
+/* .dark-mode {
   --color-background: hsl(240 10% 3.9%);
   --color-background-soft: var(--vt-c-black-soft);
   --color-background-mute: hsl(240 3.7% 15.9%);
@@ -108,7 +115,7 @@
   --color-primary: var(--vt-c-light-purple);
   --color-primary-dark: var(--vt-c-darkest-purple);
   --color-primary-light: var(--vt-c-lightest-purple);
-}
+} */
 *,
 *::before,
 *::after {

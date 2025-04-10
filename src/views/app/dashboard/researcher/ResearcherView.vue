@@ -1,6 +1,19 @@
 <template>
   <div class="researcher-view">
     <div class="content">
+      <h2>Your Trials</h2>
+      <p>Here you can manage trials, you can create, edit, and delete trials.</p>
+
+      <!-- Actions -->
+      <search-actions
+        :searchQuery="searchQuery"
+        :filter-type="filterType"
+        @update:searchQuery="searchQuery = $event.target.value"
+        @set-filter-type="setFilterType"
+        @fetch-filtered-trials="fetchFilteredTrials"
+        @open-create-drawer="openCreateDrawer"
+      />
+
       <!-- Trials Table -->
       <TrialsTable
         :trials="trials"
@@ -12,7 +25,7 @@
       <!-- Edit Drawer -->
       <TrialFormDrawer
         v-model:visible="editDrawer"
-        title="Update trial"
+        title="Edit trial"
         :trial="selectedTrial"
         @submit="handleUpdateTrial"
         @close="closeDrawer"
@@ -41,6 +54,7 @@ import { api } from '@/api'
 import TrialsTable from '@/components/dashboard/TrialsTable.vue'
 import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
+import SearchActions from '@/components/dashboard/SearchActions.vue'
 
 export default {
   name: 'ResearcherView',
@@ -48,6 +62,7 @@ export default {
     TrialsTable,
     TrialFormDrawer,
     DeleteConfirmationDialog,
+    SearchActions,
   },
   props: {
     username: {
@@ -57,26 +72,53 @@ export default {
   },
   data() {
     return {
+      allTrials: [],
       trials: [],
       deleteDialog: false,
       selectedTrial: null,
       editDrawer: false,
       createDrawer: false,
+      isFiltering: false,
+      filterType: null,
+      searchQuery: '',
     }
   },
   mounted() {
     this.fetchTrials()
   },
   methods: {
+    setFilterType(type) {
+      if (this.filterType === type) {
+        this.isFiltering = !this.isFiltering
+      } else {
+        this.isFiltering = true
+      }
+      this.filterType = type
+    },
+    fetchFilteredTrials() {
+      if (this.searchQuery === '') {
+        this.trials = this.allTrials
+        return
+      }
+      if (this.filterType === 'tag') {
+        this.trials = this.allTrials.filter((trial) =>
+          trial.tags.some((tag) => tag.toLowerCase().includes(this.searchQuery.toLowerCase())),
+        )
+      } else {
+        this.trials = this.allTrials.filter((trial) =>
+          trial.name.toLowerCase().includes(this.searchQuery.toLowerCase()),
+        )
+      }
+    },
     async fetchTrials() {
       try {
-        const response = await api.trail.getAllUserTrails()
+        const response = await api.trail.getAllTrails()
         this.trials = response.data
+        this.allTrials = response.data
       } catch (error) {
         console.error('Failed to fetch trials:', error)
       }
     },
-
     async handleCreateTrial(trialData) {
       if (!trialData) return
 

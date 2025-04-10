@@ -7,16 +7,6 @@
     item-value="_id"
     show-expand
   >
-    <template v-slot:top>
-      <v-toolbar flat>
-        <v-toolbar-title>Trials</v-toolbar-title>
-        <button class="btn btn-primary mr-2" @click="$emit('create')">
-          <v-icon start size="12">mdi-plus</v-icon>
-          New trial
-        </button>
-      </v-toolbar>
-    </template>
-
     <template #[`item.tags`]="{ item }">
       <TrialTags :tags="item.tags" />
     </template>
@@ -71,7 +61,7 @@ export default {
     TrialTags,
     ActionMenu,
   },
-  emits: ['edit', 'delete', 'create'],
+  emits: ['edit', 'delete'],
   props: {
     trials: {
       type: Array,
@@ -156,5 +146,8 @@ export default {
   font-family: var(--font-family) !important;
   background-color: transparent !important;
   color: var(--color-text) !important;
+}
+:deep(thead) {
+  background-color: var(--color-background-soft) !important;
 }
 </style>

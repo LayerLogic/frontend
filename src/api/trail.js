@@ -7,7 +7,7 @@ export function getTrailById(id) {
   return service.get(`/researcher/trails/${id}`)
 }
 
-export function getAllUserTrails() {
+export function getAllTrails() {
   return service.get('/researcher/trails')
 }
 

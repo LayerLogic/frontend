@@ -33,7 +33,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .v-list-item-title {
   font-size: 14px !important;
   padding: 0 !important;

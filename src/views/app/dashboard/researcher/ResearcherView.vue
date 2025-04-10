@@ -112,7 +112,7 @@ export default {
     },
     async fetchTrials() {
       try {
-        const response = await api.trail.getAllTrails()
+        const response = await api.trial.getAlltrials()
         this.trials = response.data
         this.allTrials = response.data
       } catch (error) {
@@ -123,7 +123,7 @@ export default {
       if (!trialData) return
 
       try {
-        await api.trail.createTrail(trialData)
+        await api.trial.createtrial(trialData)
         this.fetchTrials()
         this.createDrawer = false
       } catch (error) {
@@ -135,7 +135,7 @@ export default {
       if (!this.selectedTrial) return
 
       try {
-        await api.trail.updateTrail(this.selectedTrial._id, trialData)
+        await api.trial.updatetrial(this.selectedTrial._id, trialData)
         this.fetchTrials()
         this.editDrawer = false
         this.selectedTrial = null
@@ -151,7 +151,7 @@ export default {
       }
 
       try {
-        await api.trail.deleteTrail(this.selectedTrial._id)
+        await api.trial.deletetrial(this.selectedTrial._id)
         this.trials = this.trials.filter((trial) => trial._id !== this.selectedTrial._id)
         this.deleteDialog = false
         this.selectedTrial = null

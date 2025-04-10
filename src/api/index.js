@@ -1,5 +1,5 @@
-import * as trail from '@/api/trail'
+import * as trial from '@/api/trial'
 
 export const api = {
-  trail,
+  trial,
 }

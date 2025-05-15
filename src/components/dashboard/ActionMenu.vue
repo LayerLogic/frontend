@@ -13,6 +13,12 @@
           <p>Edit</p>
         </v-list-item-title>
       </v-list-item>
+      <v-list-item slim @click="$router.push({ path: `trial/${id}` })">
+        <v-list-item-title>
+          <v-icon size="14">mdi-magnify</v-icon>
+          <p>Inspect</p>
+        </v-list-item-title>
+      </v-list-item>
 
       <v-divider></v-divider>
 
@@ -29,6 +35,12 @@
 <script>
 export default {
   name: 'ActionMenu',
+  props: {
+    id: {
+      type: [String, Number],
+      required: true,
+    },
+  },
   emits: ['edit', 'delete'],
 }
 </script>

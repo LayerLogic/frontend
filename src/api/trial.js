@@ -3,7 +3,7 @@ import service from '@/services/axios'
 /**
  * @param {string} id
  */
-export function gettrialById(id) {
+export function getTrialById(id) {
   return service.get(`/researcher/trials/${id}`)
 }
 

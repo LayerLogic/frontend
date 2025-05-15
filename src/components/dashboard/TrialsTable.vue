@@ -24,6 +24,7 @@
         <ActionMenu
           @edit="$emit('edit', internalItem.raw)"
           @delete="$emit('delete', internalItem.raw)"
+          :id="internalItem.raw._id"
         />
       </div>
     </template>

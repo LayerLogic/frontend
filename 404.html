@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <script>
+      // This script takes the current URL path and converts it to the correct
+      // format for GitHub Pages with SPA routing
+      ;(function () {
+        // Get the current path (everything after the domain name)
+        var path = window.location.pathname
+        var repo = '/your-repo-name' // Replace with your actual repository name
+
+        // Make sure we're actually in our repo path
+        if (path.indexOf(repo) === 0) {
+          // Remove the repo name from the path
+          path = path.slice(repo.length)
+        }
+
+        // Redirect to the root with a special query parameter
+        sessionStorage.setItem('redirect', path)
+        window.location.href = repo + '/'
+      })()
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

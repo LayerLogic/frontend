@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { useSidebarStore } from '@/store/sidebar'
 import { getUserIdCookie } from '@/services/cookies'
@@ -45,7 +45,7 @@ const extractPaths = (router) => {
 }
 
 export const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     authRoutes,
     appRoutes,

@@ -8,6 +8,9 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   base: '/frontend/',
   plugins: [vue(), vueDevTools()],
+  build: {
+    sourcemap: true, // 👈 important
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

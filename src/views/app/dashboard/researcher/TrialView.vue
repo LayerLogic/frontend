@@ -241,7 +241,7 @@ export default {
     },
     goToUI() {
       const id = this.trial._id // Replace with your actual trial ID variable
-      const url = `https://layerlogic.github.io/ui-v-2?id=${encodeURIComponent(id)}`
+      const url = `https://layerlogic.github.io/research-test-ui?id=${encodeURIComponent(id)}`
       window.open(url, '_blank') // Opens in a new tab
     },
   },

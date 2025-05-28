@@ -24,8 +24,55 @@
           />
 
           <div class="input-group">
-            <label for="tags">Tags</label>
+            <div class="title-container">
+              <label for="tags">Tags</label>
+              <div class="alert-container">
+                <button class="btn btn-outline alert-btn" type="button" @click="dialog = true">
+                  <v-icon>mdi-alert</v-icon>
+                  Please read this before you start adding tags
+                </button>
+              </div>
+            </div>
             <TagsInput @update:tags="handleTagsUpdate" :initial-tags="formData.tags" />
+            <div class="dialog-container">
+              <v-dialog v-model="dialog" width="auto">
+                <v-card
+                  max-width="1040"
+                  prepend-icon="mdi-alert-outline"
+                  title="How do I tag chips?"
+                >
+                  <p>
+                    Here are some examples of tags that should be added when applicable. Always add
+                    tags that make sense, even if there are many tags. So for example, all customer
+                    chips should have both "Useful", "Customer", and "Negative" or "Positive".
+                    <br />
+                    <br />
+                    Customer - For chips that are used for customer testing <br />
+                    Listeria - For chips that we used to test for listeria in the lab <br />
+                    Good - For chips that you think are good enough to use for bacterial testing
+                    <br />
+                    Bad - For chips that either broke, or for some other reason is not good enough
+                    to use for bacterial testing. <br />
+                    OK - for chips that you arent satisfied with, but might still be useful. <br />
+                    KF/Leröy/MF/DC - If used at Kvalitetsfisk/Leröy/Magnussons Fisk/DirektChark
+                    <br />
+                    Negative - When the test looks negative after dropping bacteria <br />
+                    Positive - When the test looks positive after dropping bacteria <br />
+                    Unclear - When it is hard to say if the test is positive or negative <br />
+                    Confirmed P - Another method has confirmed the test is positive <br />
+                    Confirmed N - Another method has confirmed the test is negative <br />
+                    <br />
+                    If you carry out tests for example to get rid of histeresis in chips, please
+                    make a new tag that makes sense, so in this example it could be "Histeresis
+                    trials". If you do make a new tag, tell Mohammed so that he can add the
+                    explanation into this text box.
+                  </p>
+                  <template v-slot:actions>
+                    <v-btn class="ms-auto" text="Ok" @click="dialog = false"></v-btn>
+                  </template>
+                </v-card>
+              </v-dialog>
+            </div>
           </div>
 
           <div class="input-group">
@@ -59,6 +106,7 @@
 import RichTextInput from '@/components/testing/RichTextInput.vue'
 import TagsInput from '@/components/testing/TagsInput.vue'
 import InputField from '@/components/ui/InputField.vue'
+import { ref } from 'vue'
 
 export default {
   name: 'TrialFormDrawer',
@@ -90,6 +138,12 @@ export default {
         procedures: '',
         notes: '',
       },
+    }
+  },
+  setup() {
+    const dialog = ref(false)
+    return {
+      dialog,
     }
   },
   computed: {
@@ -197,6 +251,31 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.dialog-container {
+  position: relative;
+  display: flex;
+  align-items: start;
+  gap: 8px;
+}
+
+.title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.alert-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alert-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .button-container {

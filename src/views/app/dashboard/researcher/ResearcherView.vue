@@ -55,6 +55,8 @@ import TrialsTable from '@/components/dashboard/TrialsTable.vue'
 import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
 import SearchActions from '@/components/dashboard/SearchActions.vue'
+import { useTrialsStore } from '@/store/trials'
+import { mapActions } from 'pinia'
 
 export default {
   name: 'ResearcherView',
@@ -87,6 +89,7 @@ export default {
     this.fetchTrials()
   },
   methods: {
+    ...mapActions(useTrialsStore, ['fetchTrialsStore']),
     setFilterType(type) {
       if (this.filterType === type) {
         this.isFiltering = !this.isFiltering
@@ -112,9 +115,9 @@ export default {
     },
     async fetchTrials() {
       try {
-        const response = await api.trial.getAlltrials()
-        this.trials = response.data
-        this.allTrials = response.data
+        const response = await this.fetchTrialsStore()
+        this.trials = response
+        this.allTrials = response
       } catch (error) {
         console.error('Failed to fetch trials:', error)
       }

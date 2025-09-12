@@ -1,11 +1,21 @@
 <template>
   <div class="trial-view">
-    <div v-if="trial" class="card trial-header">
+    <div v-if="trial && !isLoading" class="card trial-header">
       <div class="card-header">
         <h3 class="card-title">
           {{ trial.name }}
-        </h3>
-        <button class="btn btn-primary" @click="goToUI">New Test</button>
+        </h3>        
+        <div class="flex gap-2">
+          <button class="btn btn-secondary" 
+            @click="loadPrevTrial"
+            :disabled="trialsStore.currentTrialIndex === 0 || isLoading">Prev
+          </button>
+          <button class="btn btn-secondary" 
+            @click="loadNextTrial"
+            :disabled="trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading">Next
+          </button>
+          <button class="btn btn-primary" @click="goToUI" :disabled="isLoading">New Test</button>
+        </div>
       </div>
       <TrialTags :tags="trial.tags" />
     </div>
@@ -13,7 +23,7 @@
       <p>Loading trial...</p>
     </div>
 
-    <div v-if="trial" class="trial-info">
+    <div v-if="trial && !isLoading" class="trial-info">
       <div class="card">
         <div class="card-header">
           <h3 class="card-title">Procedures</h3>
@@ -31,10 +41,11 @@
         </div>
       </div>
     </div>
-    <div v-else>
+    <div v-else-if="!isLoading">
       <p>Loading trial...</p>
     </div>
-    <div v-if="trial && trial.tests && trial.tests.length" class="trial-tests">
+    
+    <div v-if="trial && trial.tests && trial.tests.length && !isLoading" class="trial-tests">
       <div v-for="test in trial.tests" :key="test.id" class="card">
         <div class="card-header">
           <div>
@@ -65,7 +76,7 @@
         </div>
       </div>
     </div>
-    <div v-else>
+    <div v-else-if="trial && !isLoading">
       <p>No tests found for this trial.</p>
     </div>
   </div>
@@ -76,6 +87,8 @@ import { api } from '@/api'
 import TrialTags from '@/components/dashboard/TrialTags.vue'
 import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
+import { useTrialsStore } from '@/store/trials'
+import { mapStores, mapActions } from 'pinia'
 
 export default {
   name: 'TrialView',
@@ -86,6 +99,7 @@ export default {
   data() {
     return {
       trial: null,
+      isLoading: false,
       gateChartOptions: {
         interaction: {
           mode: 'index',
@@ -205,25 +219,49 @@ export default {
       },
     }
   },
-  mounted() {
+  computed: {
+    ...mapStores(useTrialsStore),
+  },
+  async mounted() {
     const route = useRoute()
-    this.fetchTrialWithTests(route.params.trialId)
+    this.isLoading = true
+    
+    try {
+      await this.trialsStore.fetchTrialsStore() //might be redundant
+
+      // Set current index to the route's trialId
+      const index = this.trialsStore.trialsIDs.indexOf(route.params.trialId)
+      if (index >= 0) {
+        this.trialsStore.currentTrialIndex = index
+      }
+      await this.fetchTrialWithTests(route.params.trialId)
+    } finally {
+      this.isLoading = false
+    }
   },
   methods: {
+    ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore']),
     async fetchTrialWithTests(trialId) {
       try {
-        // First get the trial data
-        const trialResponse = await api.trial.getTrialById(trialId)
-        this.trial = trialResponse.data
-
-        // Then get all tests for this trial
-        const testResponse = await api.test.getTestsByTrialId(trialId)
-        this.trial.tests = testResponse.data.data
+        this.trial = await this.fetchTrialWithTestsStore(trialId)
       } catch (error) {
         console.error('Error fetching trial or tests:', error)
       }
     },
     getChartData(testType, measurements) {
+      // Add safety check
+      if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
+        return {
+          labels: [],
+          datasets: [{
+            label: 'Voltage X',
+            data: [],
+            borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
+            pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
+          }]
+        }
+      }
+
       return {
         labels:
           testType === 'gate'
@@ -240,9 +278,35 @@ export default {
       }
     },
     goToUI() {
-      const id = this.trial._id // Replace with your actual trial ID variable
+      const id = this.trial._id
       const url = `https://layerlogic.github.io/research-test-ui?id=${encodeURIComponent(id)}`
-      window.open(url, '_blank') // Opens in a new tab
+      window.open(url, '_blank')
+    },
+    async loadPrevTrial() {
+      if (this.isLoading) return
+      
+      this.isLoading = true
+      
+      try {
+        const id = this.trialsStore.prevTrial()
+        await this.fetchTrialWithTests(id)
+        this.$router.push({ name: 'trial', params: { trialId: id } })
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async loadNextTrial() {
+      if (this.isLoading) return
+      
+      this.isLoading = true
+      
+      try {
+        const id = this.trialsStore.nextTrial()
+        await this.fetchTrialWithTests(id)
+        this.$router.push({ name: 'trial', params: { trialId: id } })
+      } finally {
+        this.isLoading = false
+      }
     },
   },
 }

@@ -33,7 +33,16 @@
                 </button>
               </div>
             </div>
-            <TagsInput @update:tags="handleTagsUpdate" :initial-tags="formData.tags" />
+            <div>
+              <TagsInput v-model="formData.tags" />
+              <v-select
+                class="default-tags-select"
+                label="Or select from default tags"
+                :items="tagChoices"
+                multiple
+                v-model="formData.tags"
+              ></v-select>
+            </div>
             <div class="dialog-container">
               <v-dialog v-model="dialog" width="auto">
                 <v-card
@@ -132,6 +141,9 @@ export default {
   emits: ['update:visible', 'submit', 'close'],
   data() {
     return {
+      tagChoices: [
+        "Customer","Listeria","Good","Bad","OK","KF","Leröy","MF","DC","Negative","Positive","Unclear","Confirmed P","Confirmed N"
+      ],
       formData: {
         name: '',
         tags: [],
@@ -183,9 +195,6 @@ export default {
         procedures: '',
         notes: '',
       }
-    },
-    handleTagsUpdate(tags) {
-      this.formData.tags = tags
     },
     handleSubmit() {
       if (!this.formData.name) {
@@ -251,6 +260,15 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.default-tags-select {
+  border-top: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.default-tags-select:focus-within {
+  border-color: var(--color-primary);
 }
 
 .dialog-container {

@@ -16,6 +16,10 @@
       {{ formatDate(item.createdAt) }}
     </template>
 
+    <template #[`item.updatedAt`]="{ item }">
+      {{ formatDate(item.updatedAt) }}
+    </template>
+
     <template v-slot:[`item.data-table-expand`]="{ internalItem, isExpanded, toggleExpand }">
       <div class="actions">
         <button class="btn btn-outline" @click="toggleExpand(internalItem)">
@@ -77,6 +81,7 @@ export default {
         { title: 'Name', key: 'name', align: 'start' },
         { title: 'Tags', key: 'tags' },
         { title: 'Created at', key: 'createdAt' },
+        { title: 'Updated at', key: 'updatedAt' },
       ],
     }
   },
@@ -86,6 +91,8 @@ export default {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
+        hour: 'numeric',
+        minute: 'numeric'
       }).format(new Date(date))
     },
   },

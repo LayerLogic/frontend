@@ -34,13 +34,17 @@
               </div>
             </div>
             <div>
-              <TagsInput v-model="formData.tags" />
+              <TagsInput 
+                @update:tags="handleTagsUpdate" 
+                :initial-tags="formData.tags"
+              />
               <v-select
                 class="default-tags-select"
                 label="Or select from default tags"
                 :items="tagChoices"
                 multiple
-                v-model="formData.tags"
+                @update:modelValue="handleSelectTagsUpdate"
+                v-model="selectTags"
               ></v-select>
             </div>
             <div class="dialog-container">
@@ -144,6 +148,7 @@ export default {
       tagChoices: [
         "Customer","Listeria","Good","Bad","OK","KF","Leröy","MF","DC","Negative","Positive","Unclear","Confirmed P","Confirmed N"
       ],
+      selectTags: [],
       formData: {
         name: '',
         tags: [],
@@ -205,6 +210,26 @@ export default {
       this.$emit('submit', { ...this.formData })
       this.resetForm()
       this.isVisible = false
+    },
+    handleTagsUpdate(tags){
+      this.formData.tags = tags
+      const filteredSelectTags = this.formData.tags.filter(tag => this.tagChoices.includes(tag))
+      this.selectTags = filteredSelectTags
+    },
+    handleSelectTagsUpdate(tags) {
+      let updatedTags = [...this.formData.tags]
+
+      updatedTags = updatedTags.filter(
+        tag => !this.tagChoices.includes(tag) || tags.includes(tag)
+      )
+
+      tags.forEach(tag => {
+        if (!updatedTags.includes(tag)) {
+          updatedTags.push(tag)
+        }
+      })
+
+      this.formData.tags = updatedTags
     },
     handleClose() {
       this.$emit('close')

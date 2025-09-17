@@ -63,6 +63,10 @@
             </p>
           </div>
           <v-chip size="small">Channel {{ test.channel }}</v-chip>
+          <button class="btn btn-danger" @click="deleteTest(test._id, trial._id)">
+            <v-icon small>mdi-delete</v-icon>
+            Delete
+          </button>
         </div>
         <div class="card-content">
           <Chart
@@ -83,11 +87,11 @@
 </template>
 
 <script>
-import { api } from '@/api'
 import TrialTags from '@/components/dashboard/TrialTags.vue'
 import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
+import { deleteTestByTestId } from '@/api/test'
 import { mapStores, mapActions } from 'pinia'
 
 export default {
@@ -293,6 +297,14 @@ export default {
         this.$router.push({ name: 'trial', params: { trialId: id } })
       } finally {
         this.isLoading = false
+      }
+    },
+    async deleteTest(testId, trialId){
+      try{
+        await deleteTestByTestId(testId)
+        this.trial = await this.fetchTrialWithTestsStore(trialId)
+      } catch (error){
+        console.error('Failed to delete test:', error)
       }
     },
     async loadNextTrial() {

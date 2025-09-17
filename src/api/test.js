@@ -6,3 +6,6 @@ import service from '@/services/axios'
 export function getTestsByTrialId(id) {
   return service.get(`/researcher/trials/${id}/tests`)
 }
+export function deleteTestByTestId(id){
+  return service.delete(`/researcher/tests/${id}`)
+}

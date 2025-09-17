@@ -5,6 +5,7 @@
     :items-per-page="5"
     :hide-default-footer="trials.length < 10"
     item-value="_id"
+    hover
     show-expand
   >
     <template #[`item.tags`]="{ item }">

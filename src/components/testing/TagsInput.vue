@@ -49,13 +49,9 @@ export default {
   name: 'TagInput',
   props: {
     // Initial tags if any
-    //initialTags: {
-    //  type: Array,
-    //  default: () => [],
-    //},
-    modelValue:{
+    initialTags: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     // Maximum number of tags allowed
     maxTags: {
@@ -105,20 +101,16 @@ export default {
   },
   data() {
     return {
-      //tags: [...this.initialTags],
-      tags: [...this.modelValue],
+      tags: [...this.initialTags],
       inputValue: '',
       error: '',
       isFocused: false,
     }
   },
   watch: {
-    modelValue(newVal){
-      this.tags = [...newVal]
-    }
-    //initialTags(newTags) {
-    //  this.tags = [...newTags]
-    //},
+    initialTags(newTags) {
+      this.tags = [...newTags]
+    },
   },
   methods: {
     addTag() {
@@ -159,12 +151,11 @@ export default {
 
       // Add the tag
       this.tags.push(value)
-      this.$emit("update:modelValue", [...this.tags]) //update parent
       this.inputValue = ''
       this.error = ''
 
       // Emit the updated tags array
-      //this.$emit('update:tags', [...this.tags])
+      this.$emit('update:tags', [...this.tags])
       this.$emit('tag-added', value, this.tags)
 
       // Focus back on the input
@@ -178,8 +169,7 @@ export default {
       this.tags.splice(index, 1)
       this.error = ''
 
-      this.$emit("update:modelValue", [...this.tags]) //update parent
-      //this.$emit('update:tags', [...this.tags])
+      this.$emit('update:tags', [...this.tags])
       this.$emit('tag-removed', removedTag, this.tags)
 
       // Focus the input after removing a tag

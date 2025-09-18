@@ -131,6 +131,45 @@
                 <label>Test ID:</label>
                 <span class="monospace">{{ selectedTest.id || selectedTest._id }}</span>
               </div>
+              <div v-if="selectedTest.commands" class="detail-section">
+                <h3 class="section-title">Commands</h3>
+                <div class="commands-content">
+                  <pre>{{ selectedTest.commands }}</pre>
+                </div>
+              </div>
+              <!-- Test Settings (if available) -->
+              <div v-if="selectedTest.settings" class="detail-section">
+                <h3 class="section-title">Test Settings</h3>
+                <div class="detail-grid">
+                  <!-- Gate test settings -->
+                  <template v-if="selectedTest.type === 'gate'">
+                    <div class="detail-item">
+                      <label>Max Gate Voltage:</label>
+                      <span>{{ selectedTest.settings.vgMax }} V</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Min Gate Voltage:</label>
+                      <span>{{ selectedTest.settings.vgMin }} V</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Gate Step:</label>
+                      <span>{{ selectedTest.settings.gateStep }} V</span>
+                    </div>
+                  </template>
+
+                  <!-- Time test settings -->
+                  <template v-else-if="selectedTest.type === 'time'">
+                    <div class="detail-item">
+                      <label>Gate Voltage:</label>
+                      <span>{{ selectedTest.settings.gateV }} V</span>
+                    </div>
+                    <div class="detail-item">
+                      <label>Delay:</label>
+                      <span>{{ selectedTest.settings.delay }} ms</span>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -736,7 +775,7 @@ export default {
 
 .detail-item label {
   font-weight: 500;
-  color: #6b7280;
+  color: #5c5b5b;
   font-size: 0.875rem;
 }
 
@@ -855,6 +894,22 @@ export default {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+.commands-content {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.commands-content pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8125rem;
+  color: #374151;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 @media (max-width: 640px) {

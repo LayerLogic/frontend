@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { getTrialById, getAlltrials } from '@/api/trial'
+import { getTrialById, getAlltrials, updatetrial } from '@/api/trial'
 import { getTestsByTrialId } from '@/api/test'
-
 
 /**
  * Handles API response validation and error extraction
@@ -41,6 +40,20 @@ export const useTrialsStore = defineStore('trials', {
         return data
         },
         "Error fetching trials")
+    },
+    /**
+     * @param {String} trialId 
+     * @param {Object} trialData 
+     * @returns {Object}
+     */
+    async updateTrialStore(trialId, trialData) {
+      if (!trialId || !trialData) return
+      return this.executeApiCall (async () => {
+        const response = await updatetrial(trialId, trialData)
+        const updatedTrial = handleApiResponse(response, 'Failed to update trial')
+        return updatedTrial
+      }, 
+        'Error updating trial')
     },
     /**
      * @param {String} trialId

@@ -17,7 +17,15 @@
           <button class="btn btn-primary" @click="goToUI" :disabled="isLoading">New Test</button>
         </div>
       </div>
-      <TrialTags :tags="trial.tags" />
+      <div class="trial-view-tags-container">
+        <div>
+          <TagsInput
+            :initial-tags="trial.tags"
+            :showHint="false"
+            @update:tags="handleTagsUpdate"
+          />
+        </div>
+      </div>
     </div>
     <div v-else>
       <p>Loading trial...</p>
@@ -87,7 +95,7 @@
 </template>
 
 <script>
-import TrialTags from '@/components/dashboard/TrialTags.vue'
+import TagsInput from '@/components/testing/TagsInput.vue'
 import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
@@ -97,7 +105,7 @@ import { mapStores, mapActions } from 'pinia'
 export default {
   name: 'TrialView',
   components: {
-    TrialTags,
+    TagsInput,
     Chart,
   },
   data() {
@@ -244,12 +252,19 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore']),
+    ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore', 'updateTrialStore']),
     async fetchTrialWithTests(trialId) {
       try {
         this.trial = await this.fetchTrialWithTestsStore(trialId)
       } catch (error) {
         console.error('Error fetching trial or tests:', error)
+      }
+    },
+    async updateTrial(trialId, trialData){
+      try{
+        this.trial = await this.updateTrialStore(trialId, trialData)
+      } catch (error) {
+        console.error('Error updating trial tags, notes or procedures: ', error)
       }
     },
     getChartData(testType, measurements) {
@@ -297,6 +312,15 @@ export default {
         this.$router.push({ name: 'trial', params: { trialId: id } })
       } finally {
         this.isLoading = false
+      }
+    },
+    async handleTagsUpdate(tags){
+      console.log({...this.trial, tags:tags})
+      try{
+        this.trial = await this.updateTrialStore(this.trial._id, {...this.trial, tags})
+        console.log("new trial:", this.trial)
+      } catch (error) {
+        console.error("Failed updating trial tags:", error)
       }
     },
     async deleteTest(testId, trialId){
@@ -396,4 +420,8 @@ export default {
   gap: 1rem;
   margin-bottom: 1rem;
 }
+.trial-view-tags-container {
+  margin-top: 0.5rem;
+}
+
 </style>

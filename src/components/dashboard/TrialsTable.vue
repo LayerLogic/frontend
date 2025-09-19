@@ -7,6 +7,7 @@
     item-value="_id"
     hover
     show-expand
+    @click:row="goToTrial"
   >
     <template #[`item.tags`]="{ item }">
       <TrialTags :tags="item.tags" />
@@ -86,6 +87,9 @@ export default {
     }
   },
   methods: {
+    goToTrial(e, trial){
+      this.$router.push({path: `trial/${trial.internalItem.raw._id}`})
+    },
     formatDate(date) {
       return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',

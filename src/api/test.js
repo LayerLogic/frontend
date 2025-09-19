@@ -9,3 +9,7 @@ export function getTestsByTrialId(id) {
 export function deleteTestByTestId(id){
   return service.delete(`/researcher/tests/${id}`)
 }
+
+export function updateTest(testId, data) {
+  return service.patch(`/researcher/tests/${testId}`, data)
+}

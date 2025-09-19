@@ -4,26 +4,30 @@
       <div class="card-header">
         <h3 class="card-title">
           {{ trial.name }}
-        </h3>        
+        </h3>
         <div class="flex gap-2">
-          <button class="btn btn-secondary" 
+          <button
+            class="btn btn-secondary"
             @click="loadPrevTrial"
-            :disabled="trialsStore.currentTrialIndex === 0 || isLoading">Prev
+            :disabled="trialsStore.currentTrialIndex === 0 || isLoading"
+          >
+            Prev
           </button>
-          <button class="btn btn-secondary" 
+          <button
+            class="btn btn-secondary"
             @click="loadNextTrial"
-            :disabled="trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading">Next
+            :disabled="
+              trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading
+            "
+          >
+            Next
           </button>
           <button class="btn btn-primary" @click="goToUI" :disabled="isLoading">New Test</button>
         </div>
       </div>
       <div class="trial-view-tags-container">
         <div>
-          <TagsInput
-            :initial-tags="trial.tags"
-            :showHint="false"
-            @update:tags="handleTagsUpdate"
-          />
+          <TagsInput :initial-tags="trial.tags" :showHint="false" @update:tags="handleTagsUpdate" />
         </div>
       </div>
     </div>
@@ -195,7 +199,7 @@
           </div>
 
           <!-- Test Configuration (if available) -->
-          <div v-if="selectedTest.notes || isEditingNotes" class="detail-section">
+          <div class="detail-section">
             <h3 class="section-title">Notes</h3>
 
             <!-- View Mode -->
@@ -205,7 +209,7 @@
             </div>
 
             <!-- Edit Mode -->
-            <div v-else class="notes-edit-container">
+            <div v-if="isEditingNotes" class="notes-edit-container">
               <textarea
                 v-model="editedNotes"
                 class="notes-textarea"
@@ -427,7 +431,7 @@ export default {
   async mounted() {
     const route = useRoute()
     this.isLoading = true
-    
+
     try {
       await this.trialsStore.fetchTrialsStore() //might be redundant
 
@@ -484,8 +488,8 @@ export default {
       this.isEditingNotes = false
       this.editedNotes = ''
     },
-    async updateTrial(trialId, trialData){
-      try{
+    async updateTrial(trialId, trialData) {
+      try {
         this.trial = await this.updateTrialStore(trialId, trialData)
       } catch (error) {
         console.error('Error updating trial tags, notes or procedures: ', error)
@@ -496,12 +500,14 @@ export default {
       if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
         return {
           labels: [],
-          datasets: [{
-            label: 'Voltage X',
-            data: [],
-            borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-            pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-          }]
+          datasets: [
+            {
+              label: 'Voltage X',
+              data: [],
+              borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
+              pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
+            },
+          ],
         }
       }
 
@@ -587,21 +593,22 @@ export default {
     generateCSV(test) {
       const headers =
         test.type === 'gate'
-          ? ['Gate Voltage (V)', 'Voltage X (mV)']
-          : ['Time (s)', 'Voltage X (mV)']
+          ? ['Vg (V)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
+          : ['Time (s)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
 
       const rows = test.measurements.map((m) =>
-        test.type === 'gate' ? [m.gateV, m.voltageX] : [m.time, m.voltageX],
+        test.type === 'gate'
+          ? [m.gateV, m.voltageX, m.voltageY, m.current, m.frequency]
+          : [m.time, m.voltageX, m.voltageY, m.current, m.frequency],
       )
 
       return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
-      window.open(url, '_blank')
     },
     async loadPrevTrial() {
       if (this.isLoading) return
-      
+
       this.isLoading = true
-      
+
       try {
         const id = this.trialsStore.prevTrial()
         await this.fetchTrialWithTests(id)
@@ -610,28 +617,31 @@ export default {
         this.isLoading = false
       }
     },
-    async handleTagsUpdate(tags){
-      console.log({...this.trial, tags:tags})
-      try{
-        this.trial = await this.updateTrialStore(this.trial._id, {...this.trial, tags})
-        console.log("new trial:", this.trial)
+    async handleTagsUpdate(tags) {
+      console.log({ ...this.trial, tags: tags })
+      try {
+        this.trial = await this.updateTrialStore(this.trial._id, { ...this.trial, tags })
+        console.log('new trial:', this.trial)
       } catch (error) {
-        console.error("Failed updating trial tags:", error)
+        console.error('Failed updating trial tags:', error)
       }
     },
-    async deleteTest(testId, trialId){
-      try{
+    async deleteTest(testId, trialId) {
+      const confirmed = window.confirm('Are you sure you want to delete this test?')
+      if (!confirmed) return
+
+      try {
         await deleteTestByTestId(testId)
         this.trial = await this.fetchTrialWithTestsStore(trialId)
-      } catch (error){
+      } catch (error) {
         console.error('Failed to delete test:', error)
       }
     },
     async loadNextTrial() {
       if (this.isLoading) return
-      
+
       this.isLoading = true
-      
+
       try {
         const id = this.trialsStore.nextTrial()
         await this.fetchTrialWithTests(id)
@@ -1033,5 +1043,4 @@ export default {
 .trial-view-tags-container {
   margin-top: 0.5rem;
 }
-
 </style>

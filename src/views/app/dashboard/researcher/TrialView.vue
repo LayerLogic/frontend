@@ -286,6 +286,7 @@ import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
 import { deleteTestByTestId } from '@/api/test'
 import { mapStores, mapActions } from 'pinia'
+import { updateTest } from '@/api/test'
 
 export default {
   name: 'TrialView',
@@ -457,7 +458,7 @@ export default {
     async saveNotes() {
       try {
         // Call your API to update the test notes
-        await api.test.updateTest(this.selectedTest.id || this.selectedTest._id, {
+        await updateTest(this.selectedTest.id || this.selectedTest._id, {
           notes: this.editedNotes,
         })
 

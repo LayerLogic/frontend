@@ -5,7 +5,9 @@
     :items-per-page="5"
     :hide-default-footer="trials.length < 10"
     item-value="_id"
+    hover
     show-expand
+    @click:row="goToTrial"
   >
     <template #[`item.tags`]="{ item }">
       <TrialTags :tags="item.tags" />
@@ -13,6 +15,10 @@
 
     <template #[`item.createdAt`]="{ item }">
       {{ formatDate(item.createdAt) }}
+    </template>
+
+    <template #[`item.updatedAt`]="{ item }">
+      {{ formatDate(item.updatedAt) }}
     </template>
 
     <template v-slot:[`item.data-table-expand`]="{ internalItem, isExpanded, toggleExpand }">
@@ -76,15 +82,21 @@ export default {
         { title: 'Name', key: 'name', align: 'start' },
         { title: 'Tags', key: 'tags' },
         { title: 'Created at', key: 'createdAt' },
+        { title: 'Updated at', key: 'updatedAt' },
       ],
     }
   },
   methods: {
+    goToTrial(e, trial){
+      this.$router.push({path: `trial/${trial.internalItem.raw._id}`})
+    },
     formatDate(date) {
       return new Intl.DateTimeFormat('en-US', {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
+        hour: 'numeric',
+        minute: 'numeric'
       }).format(new Date(date))
     },
   },

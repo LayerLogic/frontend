@@ -60,7 +60,7 @@
       <div v-for="test in trial.tests" :key="test.id" class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">{{ test.type }} Analyses</h3>
+            <h3 class="card-title">{{ test.type }} Analyses <v-chip size="small">Channel {{ test.channel }}</v-chip></h3>
             <p class="card-description">
               {{
                 new Date(test.createdAt).toLocaleString('en-US', {
@@ -74,7 +74,6 @@
             </p>
           </div>
           <div class="card-actions">
-            <v-chip size="small">Channel {{ test.channel }}</v-chip>
             <button
               class="btn btn-outline btn-sm"
               @click="openTestDetailsDialog(test)"
@@ -93,18 +92,18 @@
               </svg>
               Details
             </button>
+
+            <button class="btn btn-danger" @click="deleteTest(test._id, trial._id)">
+              <v-icon small>mdi-delete</v-icon>
+            </button>
           </div>
-          <button class="btn btn-danger" @click="deleteTest(test._id, trial._id)">
-            <v-icon small>mdi-delete</v-icon>
-            Delete
-          </button>
         </div>
         <div class="card-content">
           <Chart
             v-if="test.measurements && test.measurements.length"
             type="line"
             :data="getChartData(test.type, test.measurements)"
-            :options="test.type === 'gate' ? gateChartOptions : timeChartOptions"
+            :options="chartOptions"
             :height="300"
           />
           <p v-else>No measurement data available for this test.</p>
@@ -427,6 +426,50 @@ export default {
   },
   computed: {
     ...mapStores(useTrialsStore),
+    chartOptions() {
+      return {
+        responsive: true,
+        animation: true,
+        elements: {
+          point: {
+            radius: 0,
+          },
+          line: {
+            tension: 0.4,
+          },
+        },
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'line',
+              boxWidth: 16,
+              color: '#424242',
+            },
+          },
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            display: true,
+            position: 'left',
+          },
+          y1: {
+            type: 'linear',
+            display: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false,
+            },
+          },
+          x: {
+            type: 'linear',
+          },
+        },
+        interaction: { intersect: false, mode: 'index' },
+      }
+    }
   },
   async mounted() {
     const route = useRoute()
@@ -496,35 +539,47 @@ export default {
       }
     },
     getChartData(testType, measurements) {
-      // Add safety check
-      if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
-        return {
-          labels: [],
-          datasets: [
-            {
-              label: 'Voltage X',
-              data: [],
-              borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-              pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-            },
-          ],
-        }
+      if (!measurements?.length) {
+        return { labels: [], datasets: [] }
       }
 
-      return {
-        labels:
-          testType === 'gate'
-            ? measurements.map((item) => item.gateV)
-            : measurements.map((item) => item.time),
-        datasets: [
-          {
-            label: 'Voltage X',
-            data: measurements.map((item) => item.voltageX),
-            borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-            pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-          },
-        ],
-      }
+      // X-axis values depend on test type
+      const labels =
+        testType === 'gate'
+          ? measurements.map((m) => m.gateV)
+          : measurements.map((m) => m.time)
+
+      const datasets = []
+
+      
+      datasets.push({
+        label: 'Voltage X',
+        data: measurements.map((m) => m.voltageX),
+        borderColor: '#36A2EB',
+        backgroundColor: '#36A2EB',
+        fill: false,
+        yAxisID: 'y'
+      })
+      datasets.push({
+        label: 'Voltage Y',
+        data: measurements.map((m) => m.voltageY),
+        borderColor: '#ef4444',
+        backgroundColor: '#ef4444',
+        fill: false,
+        yAxisID: 'y1'
+      })
+      datasets.push({
+        label: 'Y / X²',
+        data: measurements.map((m) =>
+          m.voltageX !== 0 ? m.voltageY / (m.voltageX ** 2) : null
+        ),
+        borderColor: '#22c55e',
+        backgroundColor: '#22c55e',
+        fill: false,
+        yAxisID: 'y1'
+      })
+      
+      return {labels, datasets}
     },
     goToUI() {
       const id = this.trial._id
@@ -692,8 +747,9 @@ export default {
 
 .card-actions {
   display: flex;
-  gap: 0.5rem;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
 }
 
 .card-title {

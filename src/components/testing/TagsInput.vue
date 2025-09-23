@@ -243,17 +243,16 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
-  border: 1px solid var(--color-border);
+  padding: 0px 8px;
+  border: 1px dashed var(--color-border);
   border-radius: 6px;
   background-color: var(--color-background);
-  min-height: 40px;
+  min-height: 36px;
   transition: border-color 0.2s ease;
 }
 
 .tag-input-wrapper:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(124, 25, 246, 0.1);
+  border: 1px dashed black;
 }
 
 .tags-list {
@@ -266,18 +265,18 @@ export default {
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 2px 12px;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: 12px;
   max-width: 100%;
-  background-color: var(--color-primary);
+  background-color: var(--color-text);
 }
 
 .tag-text {
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  color: beige;
+  color: white;
+  font-weight: 700;
 }
 
 .tag-remove {
@@ -290,9 +289,7 @@ export default {
   cursor: pointer;
   padding: 2px;
   color: inherit;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  color: beige;
+  color: white;
 }
 
 .tag-remove:hover {
@@ -312,6 +309,7 @@ export default {
 
 .tag-input::placeholder {
   color: var(--color-text-muted);
+  font-weight: 500;
 }
 
 .error-message {

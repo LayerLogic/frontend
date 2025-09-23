@@ -45,14 +45,11 @@ export default {
 <style scoped>
 .app-wrapper {
   display: flex;
-  gap: 8px;
 }
 
 .app-container {
-  padding: 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
   width: 100%;
 }
 </style>

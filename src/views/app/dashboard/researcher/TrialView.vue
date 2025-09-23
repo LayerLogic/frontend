@@ -1,26 +1,26 @@
 <template>
   <div class="trial-view">
-    <div v-if="trial && !isLoading" class="card trial-header">
-      <div class="card-header">
-        <h3 class="card-title">
+    <div v-if="trial && !isLoading" class="trial-header">
+      <div class="header">
+        <h2 class="header-title">
           {{ trial.name }}
-        </h3>
-        <div class="flex gap-2">
+        </h2>
+        <div class="header-actions">
           <button
-            class="btn btn-secondary"
+            class="btn btn-outline"
             @click="loadPrevTrial"
             :disabled="trialsStore.currentTrialIndex === 0 || isLoading"
           >
-            Prev
+            Prev trial
           </button>
           <button
-            class="btn btn-secondary"
+            class="btn btn-outline"
             @click="loadNextTrial"
             :disabled="
               trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading
             "
           >
-            Next
+            Next trial
           </button>
           <button class="btn btn-primary" @click="goToUI" :disabled="isLoading">New Test</button>
         </div>
@@ -35,51 +35,74 @@
       <p>Loading trial...</p>
     </div>
 
-    <div v-if="trial && !isLoading" class="trial-info">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Procedures</h3>
-        </div>
-        <div class="card-content">
-          <p v-html="trial.procedures"></p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Notes</h3>
-        </div>
-        <div class="card-content">
-          <p v-html="trial.notes"></p>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="!isLoading">
-      <p>Loading trial...</p>
-    </div>
-    <div v-if="trial && trial.tests && trial.tests.length" class="trial-tests">
-      <div v-for="test in trial.tests" :key="test.id" class="card">
-        <div class="card-header">
-          <div>
-            <h3 class="card-title">{{ test.type }} Analyses <v-chip size="small">Channel {{ test.channel }}</v-chip></h3>
-            <p class="card-description">
-              {{
-                new Date(test.createdAt).toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              }}
-            </p>
+    <div class="trial-content">
+      <div v-if="trial && trial.tests && trial.tests.length" class="trial-tests">
+        <div v-for="test in trial.tests" :key="test.id" class="card">
+          <div class="card-header">
+            <div>
+              <h3 class="card-title">{{ test.type }} Analyses</h3>
+              <p class="card-description">
+                {{
+                  new Date(test.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                }}
+              </p>
+            </div>
+            <div class="card-actions">
+              <button
+                class="btn btn-outline btn-icon"
+                @click="openTestDetailsDialog(test)"
+                title="View test details"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+
+              <button
+                class="btn btn-outline btn-icon btn-danger"
+                @click="deleteTest(test._id, trial._id)"
+              >
+                <v-icon small>mdi-delete</v-icon>
+              </button>
+              <v-chip size="small" class="tag">Channel {{ test.channel }}</v-chip>
+            </div>
           </div>
-          <div class="card-actions">
-            <button
-              class="btn btn-outline btn-sm"
-              @click="openTestDetailsDialog(test)"
-              title="View test details"
-            >
+          <div class="card-content">
+            <Chart
+              v-if="test.measurements && test.measurements.length"
+              type="line"
+              :data="getChartData(test.type, test.measurements)"
+              :options="chartOptions"
+              :height="300"
+            />
+            <p v-else>No measurement data available for this test.</p>
+          </div>
+        </div>
+      </div>
+      <div v-else-if="trial && !isLoading">
+        <p>No tests found for this trial.</p>
+      </div>
+      <div v-if="trial && !isLoading" class="trial-info">
+        <div class="card">
+          <div class="card-header" @click="toggleProcedures" style="cursor: pointer">
+            <h3 class="card-title">Procedures</h3>
+            <button class="accordion-toggle">
               <svg
+                :class="{ rotated: showProcedures }"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"
@@ -87,31 +110,40 @@
                 stroke="currentColor"
                 stroke-width="2"
               >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
+                <polyline points="6,9 12,15 18,9"></polyline>
               </svg>
-              Details
-            </button>
-
-            <button class="btn btn-danger" @click="deleteTest(test._id, trial._id)">
-              <v-icon small>mdi-delete</v-icon>
             </button>
           </div>
+          <div v-if="showProcedures" class="card-content">
+            <p v-html="trial.procedures"></p>
+          </div>
         </div>
-        <div class="card-content">
-          <Chart
-            v-if="test.measurements && test.measurements.length"
-            type="line"
-            :data="getChartData(test.type, test.measurements)"
-            :options="chartOptions"
-            :height="300"
-          />
-          <p v-else>No measurement data available for this test.</p>
+
+        <div class="card">
+          <div class="card-header" @click="toggleNotes" style="cursor: pointer">
+            <h3 class="card-title">Notes</h3>
+            <button class="accordion-toggle">
+              <svg
+                :class="{ rotated: showNotes }"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="6,9 12,15 18,9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div v-if="showNotes" class="card-content">
+            <p v-html="trial.notes"></p>
+          </div>
         </div>
       </div>
-    </div>
-    <div v-else-if="trial && !isLoading">
-      <p>No tests found for this trial.</p>
+      <div v-else-if="!isLoading">
+        <p>Loading trial...</p>
+      </div>
     </div>
 
     <!-- Test Details Dialog -->
@@ -303,125 +335,10 @@ export default {
       showTestDialog: false,
       selectedTest: null,
       isLoading: false,
-      gateChartOptions: {
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#495057',
-              font: {
-                size: 12,
-              },
-            },
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            stacked: true,
-            title: {
-              display: true,
-              text: 'Gate Voltage (V)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-          y: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Voltage X (mV)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-        },
-        elements: {
-          line: {
-            tension: 0.4,
-          },
-          point: {
-            radius: 1,
-          },
-        },
-      },
-      timeChartOptions: {
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#495057',
-              font: {
-                size: 12,
-              },
-            },
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Time (S)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-          y: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Voltage X (mV)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-        },
-        elements: {
-          line: {
-            tension: 0.4,
-          },
-          point: {
-            radius: 1,
-          },
-        },
-      },
       isEditingNotes: false,
       editedNotes: '',
+      showProcedures: false,
+      showNotes: false,
     }
   },
   computed: {
@@ -429,7 +346,9 @@ export default {
     chartOptions() {
       return {
         responsive: true,
-        animation: true,
+        maintainAspectRatio: true,
+        aspectRatio: 1,
+        animation: false,
         elements: {
           point: {
             radius: 0,
@@ -440,7 +359,7 @@ export default {
         },
         plugins: {
           legend: {
-            position: "top",
+            position: 'top',
             labels: {
               usePointStyle: true,
               pointStyle: 'line',
@@ -459,9 +378,6 @@ export default {
             type: 'linear',
             display: true,
             position: 'right',
-            grid: {
-              drawOnChartArea: false,
-            },
           },
           x: {
             type: 'linear',
@@ -469,7 +385,7 @@ export default {
         },
         interaction: { intersect: false, mode: 'index' },
       }
-    }
+    },
   },
   async mounted() {
     const route = useRoute()
@@ -490,6 +406,12 @@ export default {
   },
   methods: {
     ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore', 'updateTrialStore']),
+    toggleProcedures() {
+      this.showProcedures = !this.showProcedures
+    },
+    toggleNotes() {
+      this.showNotes = !this.showNotes
+    },
     async fetchTrialWithTests(trialId) {
       try {
         this.trial = await this.fetchTrialWithTestsStore(trialId)
@@ -545,20 +467,17 @@ export default {
 
       // X-axis values depend on test type
       const labels =
-        testType === 'gate'
-          ? measurements.map((m) => m.gateV)
-          : measurements.map((m) => m.time)
+        testType === 'gate' ? measurements.map((m) => m.gateV) : measurements.map((m) => m.time)
 
       const datasets = []
 
-      
       datasets.push({
         label: 'Voltage X',
         data: measurements.map((m) => m.voltageX),
         borderColor: '#36A2EB',
         backgroundColor: '#36A2EB',
         fill: false,
-        yAxisID: 'y'
+        yAxisID: 'y',
       })
       datasets.push({
         label: 'Voltage Y',
@@ -566,20 +485,18 @@ export default {
         borderColor: '#ef4444',
         backgroundColor: '#ef4444',
         fill: false,
-        yAxisID: 'y1'
+        yAxisID: 'y1',
       })
       datasets.push({
         label: 'Y / X²',
-        data: measurements.map((m) =>
-          m.voltageX !== 0 ? m.voltageY / (m.voltageX ** 2) : null
-        ),
+        data: measurements.map((m) => (m.voltageX !== 0 ? m.voltageY / m.voltageX ** 2 : null)),
         borderColor: '#22c55e',
         backgroundColor: '#22c55e',
         fill: false,
-        yAxisID: 'y1'
+        yAxisID: 'y1',
       })
-      
-      return {labels, datasets}
+
+      return { labels, datasets }
     },
     goToUI() {
       const id = this.trial._id
@@ -711,21 +628,45 @@ export default {
 
 <style scoped>
 .trial-view {
-  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 .trial-header {
-  max-width: 400px;
+  padding: 1rem;
   min-width: auto;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.accordion-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.accordion-toggle svg {
+  transition: transform 0.2s ease;
+}
+
+.accordion-toggle svg.rotated {
+  transform: rotate(180deg);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center !important;
 }
 
 .card {
   background-color: white;
   border: 1px solid #e5e7eb;
-  border-radius: 1rem;
+  border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  min-width: 320px;
+  padding: 1.25rem;
   font-family: system-ui, sans-serif;
   transition: box-shadow 0.2s ease-in-out;
 }
@@ -738,8 +679,25 @@ export default {
   position: relative;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .card-header {
-  margin-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -747,15 +705,12 @@ export default {
 
 .card-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
   gap: 0.3rem;
 }
 
 .card-title {
   font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
+  font-weight: 700;
   color: #111827;
   text-transform: capitalize;
 }
@@ -766,33 +721,62 @@ export default {
 }
 
 .card-content {
-  font-size: 1rem;
+  padding-top: 0.5rem;
+  font-size: 0.75rem;
   color: #374151;
-  margin-bottom: 1rem;
 }
 
 .card-footer {
   display: flex;
 }
 
+.trial-content {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: 2.25fr 0.75fr;
+  gap: 1rem;
+  align-items: start;
+}
+
 .trial-info {
-  margin-bottom: 1rem;
-  margin-top: 1rem;
   display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
 .trial-tests {
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  margin-bottom: 1rem;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  max-width: 100%;
+  background-color: var(--color-text);
+  color: white;
+  font-weight: 600;
+}
+
+@media (max-width: 1040px) {
+  .trial-content {
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1rem;
+  }
+  .trial-tests {
+    grid-template-columns: 1fr;
+  }
 }
 
 .btn {
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   border: none;
   cursor: pointer;
   font-weight: 500;
@@ -825,6 +809,19 @@ export default {
   background-color: transparent;
   color: #6b7280;
   border: 1px solid #d1d5db;
+}
+
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 5rem;
+}
+
+svg {
+  display: block;
+  margin: auto;
+  stroke: currentColor;
 }
 
 .btn-outline:hover {
@@ -1097,6 +1094,6 @@ export default {
   }
 }
 .trial-view-tags-container {
-  margin-top: 0.5rem;
+  max-width: fit-content;
 }
 </style>

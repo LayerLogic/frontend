@@ -322,6 +322,7 @@ import { useTrialsStore } from '@/store/trials'
 import { deleteTestByTestId } from '@/api/test'
 import { mapStores, mapActions } from 'pinia'
 import { updateTest } from '@/api/test'
+import { toast } from 'vue-sonner'
 
 export default {
   name: 'TrialView',
@@ -417,6 +418,7 @@ export default {
         this.trial = await this.fetchTrialWithTestsStore(trialId)
       } catch (error) {
         console.error('Error fetching trial or tests:', error)
+        toast.error(error.message ?? 'Error fetching trial or tests')
       }
     },
     startEditingNotes() {
@@ -443,9 +445,11 @@ export default {
         }
 
         this.isEditingNotes = false
+        this.editedNotes = ''
+        toast.success('Notes saved successfully')
       } catch (error) {
         console.error('Error saving notes:', error)
-        // You might want to show a toast/notification here
+        toast.error(error.message ?? 'Error saving notes')
       }
     },
 
@@ -456,8 +460,10 @@ export default {
     async updateTrial(trialId, trialData) {
       try {
         this.trial = await this.updateTrialStore(trialId, trialData)
+        toast.success('Trial updated successfully')
       } catch (error) {
         console.error('Error updating trial tags, notes or procedures: ', error)
+        toast.error(error.message ?? 'Error updating trial tags, notes or procedures')
       }
     },
     getChartData(testType, measurements) {
@@ -593,9 +599,10 @@ export default {
       console.log({ ...this.trial, tags: tags })
       try {
         this.trial = await this.updateTrialStore(this.trial._id, { ...this.trial, tags })
-        console.log('new trial:', this.trial)
+        toast.success('Trial tags updated successfully')
       } catch (error) {
         console.error('Failed updating trial tags:', error)
+        toast.error(error.message ?? 'Failed updating trial tags')
       }
     },
     async deleteTest(testId, trialId) {
@@ -605,8 +612,10 @@ export default {
       try {
         await deleteTestByTestId(testId)
         this.trial = await this.fetchTrialWithTestsStore(trialId)
+        toast.success('Test deleted successfully')
       } catch (error) {
         console.error('Failed to delete test:', error)
+        toast.error(error.message ?? 'Failed to delete test')
       }
     },
     async loadNextTrial() {

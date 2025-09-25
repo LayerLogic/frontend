@@ -41,6 +41,7 @@
 <script>
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
+import { toast } from 'vue-sonner'
 
 export default {
   name: 'RegisterView',
@@ -55,6 +56,7 @@ export default {
     ...mapActions(useUserStore, ['registerUser']),
     async handleRegisteration() {
       if (!this.confirmPasswordMatch()) {
+        toast.error('Passwords do not match')
         return
       }
       const data = {
@@ -65,9 +67,11 @@ export default {
       }
       try {
         await this.registerUser(data)
+        toast.success('Registration successful')
         this.$router.push({ name: 'dashboard' })
       } catch (error) {
         console.error(error)
+        toast.error(error.response.data.message ?? 'Registration failed')
       }
     },
     confirmPasswordMatch() {

@@ -30,6 +30,7 @@
 <script>
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
+import { toast } from 'vue-sonner'
 
 export default {
   name: 'LoginView',
@@ -48,9 +49,11 @@ export default {
       }
       try {
         await this.loginUser(data)
+        toast.success('Login successful')
         this.$router.push({ name: 'dashboard' })
       } catch (error) {
         console.error(error)
+        toast.error(error.response.data.message ?? 'Login failed')
       }
     },
   },

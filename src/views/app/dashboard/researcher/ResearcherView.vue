@@ -57,6 +57,7 @@ import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.v
 import SearchActions from '@/components/dashboard/SearchActions.vue'
 import { useTrialsStore } from '@/store/trials'
 import { mapActions } from 'pinia'
+import { toast } from 'vue-sonner'
 
 export default {
   name: 'ResearcherView',
@@ -120,6 +121,7 @@ export default {
         this.allTrials = response
       } catch (error) {
         console.error('Failed to fetch trials:', error)
+        toast.error(error.message ?? 'Failed to fetch trials')
       }
     },
     async handleCreateTrial(trialData) {
@@ -129,8 +131,10 @@ export default {
         await api.trial.createtrial(trialData)
         this.fetchTrials()
         this.createDrawer = false
+        toast.success('Trial created successfully')
       } catch (error) {
         console.error('Failed to create trial:', error)
+        toast.error(error.message ?? 'Failed to create trial')
       }
     },
 
@@ -142,14 +146,17 @@ export default {
         this.fetchTrials()
         this.editDrawer = false
         this.selectedTrial = null
+        toast.success('Trial updated successfully')
       } catch (error) {
         console.error('Failed to update trial:', error)
+        toast.error(error.message ?? 'Failed to update trial')
       }
     },
 
     async deleteTrial() {
       if (!this.selectedTrial) {
         console.error('No trial selected for deletion')
+        toast.error('No trial selected for deletion')
         return
       }
 
@@ -158,8 +165,10 @@ export default {
         this.trials = this.trials.filter((trial) => trial._id !== this.selectedTrial._id)
         this.deleteDialog = false
         this.selectedTrial = null
+        toast.success('Trial deleted successfully')
       } catch (error) {
         console.error('Failed to delete trial:', error)
+        toast.error(error.message ?? 'Failed to delete trial')
       }
     },
 

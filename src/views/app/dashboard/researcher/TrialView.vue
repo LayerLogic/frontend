@@ -98,11 +98,11 @@
       </div>
       <div v-if="trial && !isLoading" class="trial-info">
         <div class="card">
-          <div class="card-header" @click="toggleProcedures" style="cursor: pointer">
+          <div class="card-header" @click="toggleTrialProcedures" style="cursor: pointer">
             <h3 class="card-title">Procedures</h3>
             <button class="accordion-toggle">
               <svg
-                :class="{ rotated: showProcedures }"
+                :class="{ rotated: showTrialProcedures }"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"
@@ -114,17 +114,56 @@
               </svg>
             </button>
           </div>
-          <div v-if="showProcedures" class="card-content">
-            <p v-html="trial.procedures"></p>
+
+          <div
+            v-if="!isEditingTrialProcedures && showTrialProcedures"
+            class="card-content"
+            @click="startEditingTrialProcedures"
+            style="cursor: pointer"
+          >
+            <p v-if="trial.procedures" v-html="trial.procedures"></p>
+            <p v-else class="empty-text-field">Click to add procedures...</p>
+          </div>
+
+          <div v-if="isEditingTrialProcedures && showTrialProcedures" class="card-content">
+            <!-- Edit Mode -->
+            <textarea
+              v-model="editedTrialProcedures"
+              class="editing-textarea"
+              placeholder="Add your procedures here..."
+              rows="4"
+              @keydown.ctrl.enter="saveTrialProcedures"
+              @keydown.esc="cancelEditingTrialProcedures"
+            ></textarea>
+            <div class="editing-textarea-actions">
+              <button class="btn btn-secondary btn-sm" @click="cancelEditingTrialProcedures">
+                Cancel
+              </button>
+              <button class="btn btn-primary btn-sm" @click="saveTrialProcedures">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                  <polyline points="7,3 7,8 15,8"></polyline>
+                </svg>
+                Save
+              </button>
+            </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header" @click="toggleNotes" style="cursor: pointer">
+          <div class="card-header" @click="toggleTrialNotes" style="cursor: pointer">
             <h3 class="card-title">Notes</h3>
             <button class="accordion-toggle">
               <svg
-                :class="{ rotated: showNotes }"
+                :class="{ rotated: showTrialNotes }"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"
@@ -136,8 +175,47 @@
               </svg>
             </button>
           </div>
-          <div v-if="showNotes" class="card-content">
-            <p v-html="trial.notes"></p>
+
+          <div
+            v-if="!isEditingTrialNotes && showTrialNotes"
+            class="card-content"
+            @click="startEditingTrialNotes"
+            style="cursor: pointer"
+          >
+            <p v-if="trial.notes" v-html="trial.notes"></p>
+            <p v-else class="empty-text-field">Click to add notes...</p>
+          </div>
+
+          <div v-if="isEditingTrialNotes && showTrialNotes" class="card-content">
+            <!-- Edit Mode -->
+            <textarea
+              v-model="editedTrialNotes"
+              class="editing-textarea"
+              placeholder="Add your notes here..."
+              rows="4"
+              @keydown.ctrl.enter="saveTrialNotes"
+              @keydown.esc="cancelEditingTrialNotes"
+            ></textarea>
+            <div class="editing-textarea-actions">
+              <button class="btn btn-secondary btn-sm" @click="cancelEditingTrialNotes">
+                Cancel
+              </button>
+              <button class="btn btn-primary btn-sm" @click="saveTrialNotes">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                  <polyline points="7,3 7,8 15,8"></polyline>
+                </svg>
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -234,24 +312,26 @@
             <h3 class="section-title">Notes</h3>
 
             <!-- View Mode -->
-            <div v-if="!isEditingNotes" class="notes-content" @click="startEditingNotes">
+            <div v-if="!isEditingTestNotes" class="notes-content" @click="startEditingTestNotes">
               <p v-if="selectedTest.notes" v-html="selectedTest.notes"></p>
-              <p v-else class="empty-notes">Click to add notes...</p>
+              <p v-else class="empty-text-field">Click to add notes...</p>
             </div>
 
             <!-- Edit Mode -->
-            <div v-if="isEditingNotes" class="notes-edit-container">
+            <div v-if="isEditingTestNotes" class="notes-edit-container">
               <textarea
-                v-model="editedNotes"
-                class="notes-textarea"
+                v-model="editedTestNotes"
+                class="editing-textarea"
                 placeholder="Add your notes here..."
                 rows="4"
-                @keydown.ctrl.enter="saveNotes"
-                @keydown.esc="cancelEditingNotes"
+                @keydown.ctrl.enter="saveTestNotes"
+                @keydown.esc="cancelEditingTestNotes"
               ></textarea>
-              <div class="notes-actions">
-                <button class="btn btn-secondary btn-sm" @click="cancelEditingNotes">Cancel</button>
-                <button class="btn btn-primary btn-sm" @click="saveNotes">
+              <div class="editing-textarea-actions">
+                <button class="btn btn-secondary btn-sm" @click="cancelEditingTestNotes">
+                  Cancel
+                </button>
+                <button class="btn btn-primary btn-sm" @click="saveTestNotes">
                   <svg
                     width="16"
                     height="16"
@@ -333,13 +413,18 @@ export default {
   data() {
     return {
       trial: null,
+      isEditingTrialProcedures: false,
+      showTrialProcedures: false,
+      editedTrialProcedures: '',
+      isEditingTrialNotes: false,
+      showTrialNotes: false,
+      editedTrialNotes: '',
+      isEditingTestNotes: false,
+      showTestNotes: false,
+      editedTestNotes: '',
       showTestDialog: false,
       selectedTest: null,
       isLoading: false,
-      isEditingNotes: false,
-      editedNotes: '',
-      showProcedures: false,
-      showNotes: false,
     }
   },
   computed: {
@@ -407,11 +492,24 @@ export default {
   },
   methods: {
     ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore', 'updateTrialStore']),
-    toggleProcedures() {
-      this.showProcedures = !this.showProcedures
+    toggleTrialProcedures() {
+      this.showTrialProcedures = !this.showTrialProcedures
     },
-    toggleNotes() {
-      this.showNotes = !this.showNotes
+    toggleTrialNotes() {
+      this.showTrialNotes = !this.showTrialNotes
+    },
+    toggleTestNotes() {
+      this.showTestNotes = !this.showTestNotes
+    },
+    resetTrialProceduresStates() {
+      this.editedTrialProcedures = ''
+      this.showTrialProcedures = false
+      this.isEditingTrialProcedures = false
+    },
+    resetTrialNotesStates() {
+      this.editedTrialNotes = ''
+      this.showTrialNotes = false
+      this.isEditingTrialNotes = false
     },
     async fetchTrialWithTests(trialId) {
       try {
@@ -421,41 +519,84 @@ export default {
         toast.error(error.message ?? 'Error fetching trial or tests')
       }
     },
-    startEditingNotes() {
-      this.isEditingNotes = true
-      this.editedNotes = this.selectedTest.notes || ''
+    startEditingTestNotes() {
+      this.isEditingTestNotes = true
+      this.editedTestNotes = this.selectedTest.notes || ''
     },
-
-    async saveNotes() {
+    startEditingTrialProcedures() {
+      this.isEditingTrialProcedures = true
+      this.editedTrialProcedures = this.trial.procedures || ''
+    },
+    startEditingTrialNotes() {
+      this.isEditingTrialNotes = true
+      this.editedTrialNotes = this.trial.notes || ''
+    },
+    async saveTestNotes() {
       try {
-        // Call your API to update the test notes
         await updateTest(this.selectedTest.id || this.selectedTest._id, {
-          notes: this.editedNotes,
+          notes: this.editedTestNotes,
         })
 
         // Update the local data
-        this.selectedTest.notes = this.editedNotes
+        this.selectedTest.notes = this.editedTestNotes
 
         // Update the test in the trial.tests array as well
         const testIndex = this.trial.tests.findIndex(
           (t) => (t.id || t._id) === (this.selectedTest.id || this.selectedTest._id),
         )
         if (testIndex !== -1) {
-          this.trial.tests[testIndex].notes = this.editedNotes
+          this.trial.tests[testIndex].notes = this.editedTestNotes
         }
 
-        this.isEditingNotes = false
-        this.editedNotes = ''
+        this.isEditingTestNotes = false
+        this.editedTestNotes = ''
         toast.success('Notes saved successfully')
       } catch (error) {
         console.error('Error saving notes:', error)
         toast.error(error.message ?? 'Error saving notes')
       }
     },
+    async saveTrialProcedures() {
+      try {
+        await this.updateTrial(this.trial._id, {
+          ...this.trial,
+          procedures: this.editedTrialProcedures,
+        })
 
-    cancelEditingNotes() {
-      this.isEditingNotes = false
-      this.editedNotes = ''
+        this.resetTrialProceduresStates()
+
+        toast.success('Trial procedures saved successfully')
+      } catch (error) {
+        console.error('Error saving trial procedures:', error)
+        toast.error(error.message ?? 'Error saving trial procedures')
+      }
+    },
+    async saveTrialNotes() {
+      try {
+        await this.updateTrial(this.trial._id, {
+          ...this.trial,
+          notes: this.editedTrialNotes,
+        })
+
+        this.resetTrialNotesStates()
+
+        toast.success('Trial notes saved successfully')
+      } catch (error) {
+        console.error('Error saving trial notes:', error)
+        toast.error(error.message ?? 'Error saving trial notes')
+      }
+    },
+    cancelEditingTestNotes() {
+      this.isEditingTestNotes = false
+      this.editedTestNotes = ''
+    },
+    cancelEditingTrialProcedures() {
+      this.isEditingTrialProcedures = false
+      this.editedTrialProcedures = ''
+    },
+    cancelEditingTrialNotes() {
+      this.isEditingTrialNotes = false
+      this.editedTrialNotes = ''
     },
     async updateTrial(trialId, trialData) {
       try {
@@ -518,8 +659,8 @@ export default {
     closeTestDialog() {
       this.showTestDialog = false
       this.selectedTest = null
-      this.isEditingNotes = false // Add this line
-      this.editedNotes = ''
+      this.isEditingTestNotes = false // Add this line
+      this.editedTestNotes = ''
       // Restore body scroll
       document.body.style.overflow = 'auto'
     },
@@ -586,6 +727,7 @@ export default {
       if (this.isLoading) return
 
       this.isLoading = true
+      this.resetTrialProceduresStates()
 
       try {
         const id = this.trialsStore.prevTrial()
@@ -622,6 +764,7 @@ export default {
       if (this.isLoading) return
 
       this.isLoading = true
+      this.resetTrialProceduresStates()
 
       try {
         const id = this.trialsStore.nextTrial()
@@ -733,6 +876,12 @@ export default {
   padding-top: 0.5rem;
   font-size: 0.75rem;
   color: #374151;
+}
+
+.card-content p {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .card-footer {
@@ -1030,7 +1179,7 @@ svg {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.empty-notes {
+.empty-text-field {
   color: #9ca3af;
   font-style: italic;
   margin: 0;
@@ -1042,7 +1191,7 @@ svg {
   gap: 0.75rem;
 }
 
-.notes-textarea {
+.editing-textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #d1d5db;
@@ -1055,13 +1204,13 @@ svg {
   transition: border-color 0.2s;
 }
 
-.notes-textarea:focus {
+.editing-textarea:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.notes-actions {
+.editing-textarea-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;

@@ -15,99 +15,35 @@ export default {
 </script>
 
 <template>
-  <section class="auth-container">
-    <header>
-      <LayerLogicLogo class="logo" width="160" hight="160" />
+  <section
+    class="grid grid-cols-1 content-center justify-center h-screen px-8 max-w-screen-lg mx-auto lg:grid-cols-2"
+  >
+    <header
+      class="leading-none max-h-screen lg:flex lg:items-center lg:pr-[calc(var(--section-gap)/2)]"
+    >
+      <LayerLogicLogo class="block mx-auto lg:mx-0 lg:mr-8" width="160" hight="160" />
 
-      <div class="wrapper">
+      <div class="lg:flex lg:items-start lg:flex-wrap">
         <GreetingMsg msg="LayerLogic" />
 
-        <nav>
-          <RouterLink to="/auth/login">Login</RouterLink>
-          <RouterLink to="/auth/register">Register</RouterLink>
+        <nav
+          class="w-full text-sm text-center mt-8 lg:text-left lg:-ml-4 lg:text-base lg:py-4 lg:mt-4"
+        >
+          <RouterLink
+            to="/auth/login"
+            class="inline-block px-4 border-l border-zinc-200 first:border-0 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors duration-200 [&.router-link-exact-active]:text-zinc-950 [&.router-link-exact-active:hover]:bg-transparent"
+          >
+            Login
+          </RouterLink>
+          <RouterLink
+            to="/auth/register"
+            class="inline-block px-4 border-l border-zinc-200 first:border-0 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors duration-200 [&.router-link-exact-active]:text-zinc-950 [&.router-link-exact-active:hover]:bg-transparent"
+          >
+            Register
+          </RouterLink>
         </nav>
       </div>
     </header>
     <RouterView />
   </section>
 </template>
-
-<style scoped>
-.auth-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  align-content: center;
-  justify-content: center;
-  height: 100vh;
-  padding: 0 2rem;
-  max-width: 1024px;
-  margin: 0 auto;
-}
-header {
-  line-height: 1;
-  max-height: 100vh;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto;
-}
-
-nav {
-  width: 100%;
-  font-size: 0.875rem;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text-muted);
-  transition: background-color 0.2s;
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  .auth-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>

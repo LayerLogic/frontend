@@ -1,39 +1,40 @@
 <template>
-  <div class="register-container">
-    <form @submit.prevent="handleRegisteration" class="register-form">
+  <div class="flex items-start justify-center p-8">
+    <form
+      @submit.prevent="handleRegisteration"
+      class="p-6 rounded-lg bg-white w-full max-w-96 border border-zinc-200 grid gap-4"
+    >
       <div>
-        <h2 class="register-title">Register</h2>
-        <h3 class="register-subtitle">
-          Already have an account? <RouterLink to="/">Login</RouterLink>
+        <h2 class="text-xl leading-7 font-normal text-left text-zinc-900">Register</h2>
+        <h3 class="text-sm leading-5 font-normal text-left text-zinc-600 mb-2">
+          Already have an account?
+          <RouterLink to="/" class="text-zinc-900 hover:underline">Login</RouterLink>
         </h3>
       </div>
-      <div class="form-group">
-        <label for="email" class="form-label">Email:</label>
-        <input
+      <div class="grid gap-2">
+        <label for="email" class="block text-zinc-600 text-sm leading-5 font-normal">Email:</label>
+        <UiInput
           type="email"
           id="email"
           v-model="email"
           required
           placeholder="example@example.com"
-          class="form-input"
         />
       </div>
-      <div class="form-group">
-        <label for="password" class="form-label">Password:</label>
-        <input type="password" id="password" v-model="password" required class="form-input" />
+      <div class="grid gap-2">
+        <label for="password" class="block text-zinc-600 text-sm leading-5 font-normal"
+          >Password:</label
+        >
+        <UiInput type="password" id="password" v-model="password" required />
       </div>
-      <div class="form-group">
-        <label for="confirmPassword" class="form-label">Confirm Password:</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          v-model="confirmPassword"
-          required
-          class="form-input"
-        />
+      <div class="grid gap-2">
+        <label for="confirmPassword" class="block text-zinc-600 text-sm leading-5 font-normal"
+          >Confirm Password:</label
+        >
+        <UiInput type="password" id="confirmPassword" v-model="confirmPassword" required />
       </div>
 
-      <button type="submit" class="btn btn-primary register-button">Register</button>
+      <UiButton type="submit" class="mt-2"> Register </UiButton>
     </form>
   </div>
 </template>
@@ -42,6 +43,8 @@
 import { useUserStore } from '@/store/user'
 import { mapActions } from 'pinia'
 import { toast } from 'vue-sonner'
+import { Input as UiInput } from '@/components/ui/input'
+import { Button as UiButton } from '@/components/ui/button'
 
 export default {
   name: 'RegisterView',
@@ -51,6 +54,10 @@ export default {
       password: '',
       confirmPassword: '',
     }
+  },
+  components: {
+    UiInput,
+    UiButton,
   },
   methods: {
     ...mapActions(useUserStore, ['registerUser']),
@@ -85,89 +92,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.register-container {
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.register-form {
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  background-color: var(--color-background);
-  box-shadow: 0 0 20rem -3.3rem var(--color-primary);
-  width: 100%;
-  max-width: 24rem;
-  border: 1px solid var(--color-border);
-  display: grid;
-  gap: 1rem;
-}
-
-.register-title {
-  font-size: 1.2rem;
-  line-height: 1.75rem;
-  font-weight: 400;
-  text-align: left;
-}
-
-.register-subtitle {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 400;
-  text-align: left;
-  color: var(--color-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.form-group {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.form-label {
-  display: block;
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  font-weight: 400;
-}
-
-.form-input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background-color: transparent;
-  color: var(--color-text);
-}
-
-.form-input:focus {
-  outline: var(--color-primary);
-  border-color: var(--color-primary);
-}
-
-.register-button {
-  background-color: var(--vt-c-light-purple);
-  color: var(--vt-c-white);
-  padding: 0.5rem 1rem;
-  border-radius: 0.25rem;
-  border: none;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  margin-top: 0.5rem;
-  height: auto !important;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.register-button:hover {
-  opacity: 0.9;
-}
-
-.register-button:focus {
-  outline: none;
-}
-</style>

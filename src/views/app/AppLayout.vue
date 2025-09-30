@@ -1,31 +1,30 @@
 <template>
-  <section class="app-wrapper">
-    <AppSidebar
-      :username="username"
-      :role="role"
-      :currentPath="$route.path"
-      :navigationGroups="navigationGroups"
-      :toggleSidebar="toggleSidebar"
-      :isCollapsed="opened"
-    />
-    <div class="app-container">
-      <RouterView />
-    </div>
-  </section>
+  <SidebarProvider>
+    <AppSidebar />
+    <SidebarTrigger />
+    <section class="app-wrapper">
+      <div class="app-container">
+        <RouterView />
+      </div>
+    </section>
+  </SidebarProvider>
 </template>
 
 <script>
-import { mapActions, mapState } from 'pinia'
+import { mapState } from 'pinia'
 import { RouterView } from 'vue-router'
-import AppSidebar from '@/components/ui/AppSidebar.vue'
 import { useUserStore } from '@/store/user'
-import { useSidebarStore } from '@/store/sidebar'
+
+import AppSidebar from '@/components/ui/AppSidebar.vue'
+import { SidebarTrigger, SidebarProvider } from '@/components/ui/sidebar'
 
 export default {
   name: 'AppLayout',
   components: {
     RouterView,
     AppSidebar,
+    SidebarTrigger,
+    SidebarProvider,
   },
   data() {
     return {
@@ -34,10 +33,6 @@ export default {
   },
   computed: {
     ...mapState(useUserStore, ['username', 'role']),
-    ...mapState(useSidebarStore, ['opened', 'navigationGroups']),
-  },
-  methods: {
-    ...mapActions(useSidebarStore, ['toggleSidebar']),
   },
 }
 </script>

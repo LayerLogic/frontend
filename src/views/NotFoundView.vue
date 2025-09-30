@@ -1,55 +1,25 @@
 <template>
-  <div class="not-found">
-    <h1>404</h1>
-    <h2>Page Not Found</h2>
-    <p>The page you are looking for doesn't exist or has been moved.</p>
-    <router-link to="/" class="home-link"> Return to Home </router-link>
+  <div class="flex flex-col bg-zinc-50 items-center justify-center min-h-dvh text-center">
+    <div class="p-6 bg-white rounded-md border border-zinc-200">
+      <h1 class="text-8xl m-0 font-black text-zinc-200">404</h1>
+      <h2 class="text-2xl mt-6 mb-1.5 mx-0 font-medium">Page Not Found</h2>
+      <p class="text-zinc-400 mb-8">
+        The page you are looking for doesn't exist or has been moved.
+      </p>
+      <UiButton class="rounded-full">
+        <router-link to="/"> Return to Home </router-link>
+      </UiButton>
+    </div>
   </div>
 </template>
 
 <script>
+import { Button as UiButton } from '@/components/ui/button'
+
 export default {
   name: 'NotFoundView',
+  components: {
+    UiButton,
+  },
 }
 </script>
-
-<style scoped>
-.not-found {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh;
-  text-align: center;
-}
-
-h1 {
-  font-size: 6rem;
-  margin: 0;
-  color: #2c3e50;
-}
-
-h2 {
-  font-size: 2rem;
-  margin: 0.5rem 0;
-  color: #2c3e50;
-}
-
-p {
-  color: #666;
-  margin-bottom: 2rem;
-}
-
-.home-link {
-  padding: 0.8rem 1.6rem;
-  background-color: var(--color-primary);
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.home-link:hover {
-  background-color: var(--color-primary-dark);
-}
-</style>

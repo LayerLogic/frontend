@@ -1,6 +1,4 @@
-import 'vuetify/styles'
 import './assets/main.css'
-import './assets/vuetify-custom.css'
 import '@mdi/font/css/materialdesignicons.css'
 
 import { createApp } from 'vue'

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
-import { getTrialById, getAlltrials, updatetrial } from '@/api/trial'
-import { getTestsByTrialId } from '@/api/test'
+import { getTrialById, getAlltrials, updatetrial, deletetrial, createtrial } from '@/api/trial'
+import { useTestsStore } from '@/store/tests'
+import { TrialSchema } from '@/utils/schemas'
+import messages from '@/utils/messages.json'
 
 /**
  * Handles API response validation and error extraction
@@ -19,7 +21,7 @@ const handleApiResponse = (response, errorMessage) => {
 export const useTrialsStore = defineStore('trials', {
   state: () => ({
     trialsIDs: [],
-    currentTrialIndex: 0
+    currentTrialIndex: 0,
   }),
 
   getters: {
@@ -33,77 +35,86 @@ export const useTrialsStore = defineStore('trials', {
      * @returns {Object}
      */
     async fetchTrialsStore() {
-        return this.executeApiCall (async () => {
-        const response = await getAlltrials()
-        const data = handleApiResponse(response, 'Failed to fetch trials')
-        this.trialsIDs = data.map(trial => trial._id)
-        return data
-        },
-        "Error fetching trials")
+      const response = await getAlltrials()
+      const data = handleApiResponse(response, messages.fetching.trials.multiple.failure)
+      const trials = data.map((trial) => TrialSchema.parse(trial))
+      this.trialsIDs = trials.map((trial) => trial._id)
+      return trials
     },
     /**
-     * @param {String} trialId 
-     * @param {Object} trialData 
+     * @param {String} trialId
+     * @param {Object} trialData
      * @returns {Object}
      */
     async updateTrialStore(trialId, trialData) {
       if (!trialId || !trialData) return
-      return this.executeApiCall (async () => {
-        const response = await updatetrial(trialId, trialData)
-        const updatedTrial = handleApiResponse(response, 'Failed to update trial')
-        return updatedTrial
-      }, 
-        'Error updating trial')
+      const response = await updatetrial(trialId, trialData)
+      const data = handleApiResponse(response, messages.trials.updated.general.failure)
+      const updatedTrial = TrialSchema.parse(data)
+      return updatedTrial
     },
     /**
      * @param {String} trialId
      * @returns {Object}
      */
     async fetchTrialWithTestsStore(trialId) {
-        return this.executeApiCall(async () => {
-            // First get the trial data
-            const trialResponse = await getTrialById(trialId)
-            const trial = trialResponse.data
-
-            // Then get all tests for this trial
-            const testResponse = await getTestsByTrialId(trialId)
-            trial.tests = testResponse.data.data
-            return trial
-        }, 'Error fetching trial or tests:')
-    },
-    /**
-     * Generic API request handler with loading and error states
-     * @returns {String}
-     */
-    prevTrial(){
-        if (this.currentTrialIndex > 0){
-            this.currentTrialIndex -= 1
-            return this.trialsIDs[this.currentTrialIndex]
-        }
-        return this.trialsIDs[this.currentTrialIndex]
-    },
-    nextTrial(){
-        if (this.currentTrialIndex <= this.trialsIDs.length - 2){
-            this.currentTrialIndex += 1
-            return this.trialsIDs[this.currentTrialIndex]
-        }
-        return this.trialsIDs[this.currentTrialIndex]
+      // First get the trial data
+      const trialResponse = await getTrialById(trialId)
+      const trialData = handleApiResponse(trialResponse, messages.fetching.trials.single.failure)
+      const trial = TrialSchema.parse(trialData)
+      // Then get all tests for this trial
+      const testsStore = useTestsStore()
+      const tests = await testsStore.getTestsByTrialIdStore(trialId)
+      trial.tests = tests
+      return trial
     },
 
     /**
-     * Generic API request handler with loading and error states
-     * @param {Function} apiCall - Function that makes the API call
-     * @param {string} errorMsg - Default error message
-     * @returns {Promise<Object>}
+     * @param {String} trialId
+     * @returns {Object} An object with the success message attached as the attribute "message"
      */
-    async executeApiCall(apiCall, errorMsg) {
-      try {
-        const result = await apiCall()
-        return result
-      } catch (error) {
-        console.error(errorMsg, error)
-        throw error
+    async deleteTrialStore(trialId) {
+      if (!trialId) return
+      const response = await deletetrial(trialId)
+      const result = handleApiResponse(response, messages.trials.deleted.failure)
+
+      //Optimistic approach when deleting trials
+      this.trialsIDs = this.trialsIDs.filter((id) => id !== trialId)
+
+      return result.message
+    },
+
+    /**
+     * @param {Object} trialData
+     * @returns {Object} The newly created trial
+     */
+    async createTrialStore(trialData) {
+      if (!trialData) return
+      const response = await createtrial(trialData)
+      const data = handleApiResponse(response, messages.trials.created.failure)
+      const trial = TrialSchema.parse(data.newTrial)
+
+      return trial //returned if needed but not used atm
+    },
+    /**
+     * @returns {String} The previous trial's id if it exists, otherwise current's
+     */
+    prevTrial() {
+      if (this.currentTrialIndex > 0) {
+        this.currentTrialIndex -= 1
+        return this.trialsIDs[this.currentTrialIndex]
       }
-    }
+      return this.trialsIDs[this.currentTrialIndex]
+    },
+    /**
+     * @returns {String} The next trial's id if it exists, otherwise current's
+     */
+    nextTrial() {
+      if (this.currentTrialIndex <= this.trialsIDs.length - 2) {
+        this.currentTrialIndex += 1
+        return this.trialsIDs[this.currentTrialIndex]
+      }
+      return this.trialsIDs[this.currentTrialIndex]
+    },
   },
 })

@@ -31,7 +31,8 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue-sonner": "^2.0.8",
-    "vuetify": "^3.7.18"
+    "vuetify": "^3.7.18",
+    "zod": "^4.1.11"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",

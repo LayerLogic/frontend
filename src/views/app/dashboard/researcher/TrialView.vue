@@ -9,16 +9,14 @@
           <button
             class="btn btn-outline"
             @click="loadPrevTrial"
-            :disabled="trialsStore.currentTrialIndex === 0 || isLoading"
+            :disabled="currentTrialIndex === 0 || isLoading"
           >
             Prev trial
           </button>
           <button
             class="btn btn-outline"
             @click="loadNextTrial"
-            :disabled="
-              trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading
-            "
+            :disabled="currentTrialIndex === trialsIDs.length - 1 || isLoading"
           >
             Next trial
           </button>
@@ -37,7 +35,7 @@
 
     <div class="trial-content">
       <div v-if="trial && trial.tests && trial.tests.length" class="trial-tests">
-        <div v-for="test in trial.tests" :key="test.id" class="card">
+        <div v-for="test in trial.tests" :key="test._id" class="card">
           <div class="card-header">
             <div>
               <h3 class="card-title">{{ test.type }} Analyses</h3>
@@ -86,7 +84,7 @@
               v-if="test.measurements && test.measurements.length"
               type="line"
               :data="getChartData(test.type, test.measurements)"
-              :options="chartOptions"
+              :options="defaultChartOptions"
               :height="300"
             />
             <p v-else>No measurement data available for this test.</p>
@@ -98,7 +96,11 @@
       </div>
       <div v-if="trial && !isLoading" class="trial-info">
         <div class="card">
-          <div class="card-header" @click="toggleTrialProcedures" style="cursor: pointer">
+          <div
+            class="card-header"
+            @click="toggleBool('showTrialProcedures')"
+            style="cursor: pointer"
+          >
             <h3 class="card-title">Procedures</h3>
             <button class="accordion-toggle">
               <svg
@@ -159,7 +161,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header" @click="toggleTrialNotes" style="cursor: pointer">
+          <div class="card-header" @click="toggleBool('showTrialNotes')" style="cursor: pointer">
             <h3 class="card-title">Notes</h3>
             <button class="accordion-toggle">
               <svg
@@ -383,7 +385,7 @@
           <button class="btn btn-secondary" @click="closeTestDialog">Close</button>
           <button
             class="btn btn-primary"
-            @click="exportTestData"
+            @click="exportTestData(selectedTest)"
             v-if="selectedTest && selectedTest.measurements"
           >
             Export Data
@@ -396,13 +398,28 @@
 
 <script>
 import TagsInput from '@/components/testing/TagsInput.vue'
+import { defaultChartOptions, getChartData } from '@/utils/chart'
 import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
-import { deleteTestByTestId } from '@/api/test'
-import { mapStores, mapActions } from 'pinia'
-import { updateTest } from '@/api/test'
-import { toast } from 'vue-sonner'
+import { useTestsStore } from '@/store/tests'
+import { mapState, mapWritableState, mapActions } from 'pinia'
+import {
+  buildUIUrl,
+  exportTestData,
+  formatDate,
+  formatConfigKey,
+  getVoltageRange,
+  getGateVoltageRange,
+  getTimeRange,
+} from '@/utils/data'
+import {
+  resetEditingStates,
+  toggleBoolStates,
+  findIndexById,
+  executeApiCallWithToasts,
+} from '@/utils/helpers'
+import messages from '@/utils/messages.json'
 
 export default {
   name: 'TrialView',
@@ -412,6 +429,7 @@ export default {
   },
   data() {
     return {
+      defaultChartOptions,
       trial: null,
       isEditingTrialProcedures: false,
       showTrialProcedures: false,
@@ -420,7 +438,6 @@ export default {
       showTrialNotes: false,
       editedTrialNotes: '',
       isEditingTestNotes: false,
-      showTestNotes: false,
       editedTestNotes: '',
       showTestDialog: false,
       selectedTest: null,
@@ -428,62 +445,30 @@ export default {
     }
   },
   computed: {
-    ...mapStores(useTrialsStore),
-    chartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: true,
-        aspectRatio: 1,
-        animation: false,
-        elements: {
-          point: {
-            radius: 0,
-          },
-          line: {
-            tension: 0.4,
-          },
-        },
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              usePointStyle: true,
-              pointStyle: 'line',
-              boxWidth: 16,
-              color: '#424242',
-            },
-          },
-        },
-        scales: {
-          y: {
-            type: 'linear',
-            display: true,
-            position: 'left',
-          },
-          y1: {
-            type: 'linear',
-            display: true,
-            position: 'right',
-          },
-          x: {
-            type: 'linear',
-          },
-        },
-        interaction: { intersect: false, mode: 'index' },
-      }
+    ...mapState(useTrialsStore, ['trialsIDs']),
+    ...mapWritableState(useTrialsStore, ['currentTrialIndex']),
+    getTrialProceduresStates() {
+      return ['editedTrialProcedures', 'showTrialProcedures', 'isEditingTrialProcedures']
+    },
+    getTrialNotesStates() {
+      return ['editedTrialNotes', 'showTrialNotes', 'isEditingTrialNotes']
+    },
+    getTestNotesStates() {
+      return ['isEditingTestNotes', 'editedTestNotes']
     },
   },
+  
   async mounted() {
     const route = useRoute()
     this.isLoading = true
 
     try {
-      await this.trialsStore.fetchTrialsStore() //might be redundant
+      await this.fetchTrialsStore() //might be redundant
 
       // Set current index to the route's trialId
-      const index = this.trialsStore.trialsIDs.indexOf(route.params.trialId)
+      const index = this.trialsIDs.indexOf(route.params.trialId)
       if (index >= 0) {
-        this.trialsStore.currentTrialIndex = index
+        this.currentTrialIndex = index
       }
       await this.fetchTrialWithTests(route.params.trialId)
     } finally {
@@ -491,33 +476,43 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore', 'updateTrialStore']),
-    toggleTrialProcedures() {
-      this.showTrialProcedures = !this.showTrialProcedures
+    ...mapActions(useTrialsStore, [
+      'fetchTrialWithTestsStore',
+      'updateTrialStore',
+      'fetchTrialsStore',
+      'prevTrial',
+      'nextTrial',
+    ]),
+    ...mapActions(useTestsStore, ['updateTestStore', 'deleteTestByTestIdStore']),
+    //chart.js:
+    getChartData,
+    exportTestData,
+    //data.js:
+    buildUIUrl,
+    formatDate,
+    formatConfigKey,
+    getVoltageRange,
+    getGateVoltageRange,
+    getTimeRange,
+    //helpers.js:
+    resetEditingStates,
+    toggleBoolStates,
+    findIndexById,
+    executeApiCallWithToasts,
+    resetStates(varsArray) {
+      resetEditingStates(this, varsArray)
     },
-    toggleTrialNotes() {
-      this.showTrialNotes = !this.showTrialNotes
+    toggleBool(boolVar) {
+      toggleBoolStates(this, boolVar)
     },
-    toggleTestNotes() {
-      this.showTestNotes = !this.showTestNotes
+    cancelEditingTestNotes() {
+      this.resetStates(this.getTestNotesStates)
     },
-    resetTrialProceduresStates() {
-      this.editedTrialProcedures = ''
-      this.showTrialProcedures = false
-      this.isEditingTrialProcedures = false
+    cancelEditingTrialProcedures() {
+      this.resetStates(this.getTrialProceduresStates)
     },
-    resetTrialNotesStates() {
-      this.editedTrialNotes = ''
-      this.showTrialNotes = false
-      this.isEditingTrialNotes = false
-    },
-    async fetchTrialWithTests(trialId) {
-      try {
-        this.trial = await this.fetchTrialWithTestsStore(trialId)
-      } catch (error) {
-        console.error('Error fetching trial or tests:', error)
-        toast.error(error.message ?? 'Error fetching trial or tests')
-      }
+    cancelEditingTrialNotes() {
+      this.resetStates(this.getTrialNotesStates)
     },
     startEditingTestNotes() {
       this.isEditingTestNotes = true
@@ -531,124 +526,8 @@ export default {
       this.isEditingTrialNotes = true
       this.editedTrialNotes = this.trial.notes || ''
     },
-    async saveTestNotes() {
-      try {
-        await updateTest(this.selectedTest.id || this.selectedTest._id, {
-          notes: this.editedTestNotes,
-        })
-
-        // Update the local data
-        this.selectedTest.notes = this.editedTestNotes
-
-        // Update the test in the trial.tests array as well
-        const testIndex = this.trial.tests.findIndex(
-          (t) => (t.id || t._id) === (this.selectedTest.id || this.selectedTest._id),
-        )
-        if (testIndex !== -1) {
-          this.trial.tests[testIndex].notes = this.editedTestNotes
-        }
-
-        this.isEditingTestNotes = false
-        this.editedTestNotes = ''
-        toast.success('Notes saved successfully')
-      } catch (error) {
-        console.error('Error saving notes:', error)
-        toast.error(error.message ?? 'Error saving notes')
-      }
-    },
-    async saveTrialProcedures() {
-      try {
-        await this.updateTrial(this.trial._id, {
-          ...this.trial,
-          procedures: this.editedTrialProcedures,
-        })
-
-        this.resetTrialProceduresStates()
-
-        toast.success('Trial procedures saved successfully')
-      } catch (error) {
-        console.error('Error saving trial procedures:', error)
-        toast.error(error.message ?? 'Error saving trial procedures')
-      }
-    },
-    async saveTrialNotes() {
-      try {
-        await this.updateTrial(this.trial._id, {
-          ...this.trial,
-          notes: this.editedTrialNotes,
-        })
-
-        this.resetTrialNotesStates()
-
-        toast.success('Trial notes saved successfully')
-      } catch (error) {
-        console.error('Error saving trial notes:', error)
-        toast.error(error.message ?? 'Error saving trial notes')
-      }
-    },
-    cancelEditingTestNotes() {
-      this.isEditingTestNotes = false
-      this.editedTestNotes = ''
-    },
-    cancelEditingTrialProcedures() {
-      this.isEditingTrialProcedures = false
-      this.editedTrialProcedures = ''
-    },
-    cancelEditingTrialNotes() {
-      this.isEditingTrialNotes = false
-      this.editedTrialNotes = ''
-    },
-    async updateTrial(trialId, trialData) {
-      try {
-        this.trial = await this.updateTrialStore(trialId, trialData)
-        toast.success('Trial updated successfully')
-      } catch (error) {
-        console.error('Error updating trial tags, notes or procedures: ', error)
-        toast.error(error.message ?? 'Error updating trial tags, notes or procedures')
-      }
-    },
-    getChartData(testType, measurements) {
-      if (!measurements?.length) {
-        return { labels: [], datasets: [] }
-      }
-
-      // X-axis values depend on test type
-      const labels =
-        testType === 'gate' ? measurements.map((m) => m.gateV) : measurements.map((m) => m.time)
-
-      const datasets = []
-
-      datasets.push({
-        label: 'Voltage X',
-        data: measurements.map((m) => m.voltageX),
-        borderColor: '#36A2EB',
-        backgroundColor: '#36A2EB',
-        fill: false,
-        yAxisID: 'y',
-      })
-      datasets.push({
-        label: 'Voltage Y',
-        data: measurements.map((m) => m.voltageY),
-        borderColor: '#ef4444',
-        backgroundColor: '#ef4444',
-        fill: false,
-        yAxisID: 'y1',
-      })
-      datasets.push({
-        label: 'Y / X²',
-        data: measurements.map((m) => (m.voltageX !== 0 ? m.voltageY / m.voltageX ** 2 : null)),
-        borderColor: '#22c55e',
-        backgroundColor: '#22c55e',
-        fill: false,
-        yAxisID: 'y1',
-      })
-
-      return { labels, datasets }
-    },
     goToUI() {
-      const id = this.trial._id
-      const url = `https://layerlogic.github.io/research-test-ui?id=${encodeURIComponent(id)}`
-      window.open(url, '_blank')
+      window.open(buildUIUrl(this.trial._id), '_blank')
     },
     openTestDetailsDialog(test) {
       this.selectedTest = test
@@ -659,115 +538,107 @@ export default {
     closeTestDialog() {
       this.showTestDialog = false
       this.selectedTest = null
-      this.isEditingTestNotes = false // Add this line
-      this.editedTestNotes = ''
+      this.cancelEditingTestNotes()
       // Restore body scroll
       document.body.style.overflow = 'auto'
     },
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
+    async updateTrial(trialId, trialData) {
+      //expects caller to handle thrown errors
+      this.trial = await this.updateTrialStore(trialId, trialData)
     },
-    formatConfigKey(key) {
-      return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+    async fetchTrialWithTests(trialId) {
+      await this.executeApiCallWithToasts(async () => {
+        this.trial = await this.fetchTrialWithTestsStore(trialId)
+      }, messages.fetching.general.failure)
     },
-    getVoltageRange(measurements) {
-      const voltages = measurements.map((m) => m.voltageX)
-      const min = Math.min(...voltages)
-      const max = Math.max(...voltages)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} mV`
-    },
-    getGateVoltageRange(measurements) {
-      const voltages = measurements.map((m) => m.gateV)
-      const min = Math.min(...voltages)
-      const max = Math.max(...voltages)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} V`
-    },
-    getTimeRange(measurements) {
-      const times = measurements.map((m) => m.time)
-      const min = Math.min(...times)
-      const max = Math.max(...times)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} s`
-    },
-    exportTestData() {
-      if (!this.selectedTest || !this.selectedTest.measurements) return
-
-      const csvContent = this.generateCSV(this.selectedTest)
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `test-${this.selectedTest.id || this.selectedTest._id}-data.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-    },
-    generateCSV(test) {
-      const headers =
-        test.type === 'gate'
-          ? ['Vg (V)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
-          : ['Time (s)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
-
-      const rows = test.measurements.map((m) =>
-        test.type === 'gate'
-          ? [m.gateV, m.voltageX, m.voltageY, m.current, m.frequency]
-          : [m.time, m.voltageX, m.voltageY, m.current, m.frequency],
+    async saveTestNotes() {
+      await this.executeApiCallWithToasts(
+        async () => {
+          await this.updateTestStore(this.selectedTest.id || this.selectedTest._id, {
+            notes: this.editedTestNotes,
+          })
+        },
+        messages.tests.updated.notes.failure,
+        messages.tests.updated.notes.success,
       )
-
-      return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+      this.selectedTest.notes = this.editedTestNotes
+      // Update the test in the trial.tests array as well
+      const testIndex = this.findIndexById(this.trial.tests, this.selectedTest)
+      if (testIndex !== -1) {
+        this.trial.tests[testIndex].notes = this.editedTestNotes
+      }
+      this.cancelEditingTestNotes()
     },
-    async loadPrevTrial() {
+    async saveTrialProcedures() {
+      await this.executeApiCallWithToasts(
+        () => {
+          this.updateTrial(this.trial._id, {
+            ...this.trial,
+            procedures: this.editedTrialProcedures,
+          })
+        },
+        messages.trials.updated.procedures.failure,
+        messages.trials.updated.procedures.success,
+      )
+      this.resetStates(this.getTrialProceduresStates)
+    },
+    async saveTrialNotes() {
+      await this.executeApiCallWithToasts(
+        () => {
+          this.updateTrial(this.trial._id, {
+            ...this.trial,
+            notes: this.editedTrialNotes,
+          })
+        },
+        messages.trials.updated.notes.failure,
+        messages.trials.updated.notes.success,
+      )
+      this.resetStates(this.getTrialNotesStates)
+    },
+    async handleTagsUpdate(tags) {
+      await this.executeApiCallWithToasts(
+        () => {
+          this.updateTrial(this.trial._id, { ...this.trial, tags })
+        },
+        messages.trials.updated.tags.failure,
+        messages.trials.updated.tags.success,
+      )
+    },
+    async deleteTest(testId) {
+      const confirmed = window.confirm(messages.tests.deleted.confirm)
+      if (!confirmed) return
+      await this.executeApiCallWithToasts(
+        () => {
+          this.deleteTestByTestIdStore(testId)
+        },
+        messages.tests.deleted.failure,
+        messages.tests.deleted.success,
+      )
+      //optimistic approach of removing the deleted test
+      this.trial.tests = this.trial.tests.filter((t) => t._id !== testId)
+    },
+    async loadNextTrial() {
       if (this.isLoading) return
 
       this.isLoading = true
-      this.resetTrialProceduresStates()
+      this.resetStates(this.getTrialProceduresStates)
 
       try {
-        const id = this.trialsStore.prevTrial()
+        const id = this.nextTrial()
         await this.fetchTrialWithTests(id)
         this.$router.push({ name: 'trial', params: { trialId: id } })
       } finally {
         this.isLoading = false
       }
     },
-    async handleTagsUpdate(tags) {
-      console.log({ ...this.trial, tags: tags })
-      try {
-        this.trial = await this.updateTrialStore(this.trial._id, { ...this.trial, tags })
-        toast.success('Trial tags updated successfully')
-      } catch (error) {
-        console.error('Failed updating trial tags:', error)
-        toast.error(error.message ?? 'Failed updating trial tags')
-      }
-    },
-    async deleteTest(testId, trialId) {
-      const confirmed = window.confirm('Are you sure you want to delete this test?')
-      if (!confirmed) return
-
-      try {
-        await deleteTestByTestId(testId)
-        this.trial = await this.fetchTrialWithTestsStore(trialId)
-        toast.success('Test deleted successfully')
-      } catch (error) {
-        console.error('Failed to delete test:', error)
-        toast.error(error.message ?? 'Failed to delete test')
-      }
-    },
-    async loadNextTrial() {
+    async loadPrevTrial() {
       if (this.isLoading) return
 
       this.isLoading = true
-      this.resetTrialProceduresStates()
+      this.resetStates(this.getTrialProceduresStates)
 
       try {
-        const id = this.trialsStore.nextTrial()
+        const id = this.prevTrial()
         await this.fetchTrialWithTests(id)
         this.$router.push({ name: 'trial', params: { trialId: id } })
       } finally {

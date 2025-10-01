@@ -46,11 +46,14 @@ import { mapActions } from 'pinia'
 import { toast } from 'vue-sonner'
 
 import { useTrialsStore } from '@/store/trials'
-import { api } from '@/api'
 
 import DataTable from '@/components/dashboard/DataTable.vue'
 import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
+import { useTrialsStore } from '@/store/trials'
+import { mapActions } from 'pinia'
+import messages from '@/utils/messages.json'
+import { executeApiCallWithToasts } from '@/utils/helpers'
 
 export default {
   name: 'ResearcherView',
@@ -82,7 +85,14 @@ export default {
     this.fetchTrials()
   },
   methods: {
-    ...mapActions(useTrialsStore, ['fetchTrialsStore']),
+    ...mapActions(useTrialsStore, [
+      'fetchTrialsStore',
+      'deleteTrialStore',
+      'createTrialStore',
+      'updateTrialStore',
+    ]),
+    //helper.js
+    executeApiCallWithToasts,
     setFilterType(type) {
       if (this.filterType === type) {
         this.isFiltering = !this.isFiltering
@@ -107,61 +117,53 @@ export default {
       }
     },
     async fetchTrials() {
-      try {
-        const response = await this.fetchTrialsStore()
-        this.trials = response
-        this.allTrials = response
-      } catch (error) {
-        console.error('Failed to fetch trials:', error)
-        toast.error(error.message ?? 'Failed to fetch trials')
-      }
+      await this.executeApiCallWithToasts(async () => {
+        this.allTrials = await this.fetchTrialsStore()
+      }, messages.fetching.trials.multiple.failure)
+      this.trials = this.allTrials
     },
+
     async handleCreateTrial(trialData) {
       if (!trialData) return
+      await this.executeApiCallWithToasts(
+        () => {
+          this.createTrialStore(trialData)
+        },
+        messages.trials.created.failure,
+        messages.trials.created.success,
+      )
 
-      try {
-        await api.trial.createtrial(trialData)
-        this.fetchTrials()
-        this.createDrawer = false
-        toast.success('Trial created successfully')
-      } catch (error) {
-        console.error('Failed to create trial:', error)
-        toast.error(error.message ?? 'Failed to create trial')
-      }
+      await this.fetchTrials()
+      this.createDrawer = false
     },
 
     async handleUpdateTrial(trialData) {
       if (!this.selectedTrial) return
+      await this.executeApiCallWithToasts(
+        () => {
+          this.updateTrialStore(this.selectedTrial._id, trialData)
+        },
+        messages.trials.updated.general.failure,
+        messages.trials.updated.general.success,
+      )
 
-      try {
-        await api.trial.updatetrial(this.selectedTrial._id, trialData)
-        this.fetchTrials()
-        this.editDrawer = false
-        this.selectedTrial = null
-        toast.success('Trial updated successfully')
-      } catch (error) {
-        console.error('Failed to update trial:', error)
-        toast.error(error.message ?? 'Failed to update trial')
-      }
+      await this.fetchTrials()
+      this.editDrawer = false
+      this.selectedTrial = null
     },
 
     async deleteTrial() {
-      if (!this.selectedTrial) {
-        console.error('No trial selected for deletion')
-        toast.error('No trial selected for deletion')
-        return
-      }
-
-      try {
-        await api.trial.deletetrial(this.selectedTrial._id)
-        this.trials = this.trials.filter((trial) => trial._id !== this.selectedTrial._id)
-        this.deleteDialog = false
-        this.selectedTrial = null
-        toast.success('Trial deleted successfully')
-      } catch (error) {
-        console.error('Failed to delete trial:', error)
-        toast.error(error.message ?? 'Failed to delete trial')
-      }
+      await this.executeApiCallWithToasts(
+        () => {
+          this.deleteTrialStore(this.selectedTrial._id)
+        },
+        messages.trials.deleted.failure,
+        messages.trials.deleted.success,
+      )
+      this.trials = this.trials.filter((trial) => trial._id !== this.selectedTrial._id)
+      this.allTrials = this.allTrials.filter((trial) => trial._id !== this.selectedTrial._id)
+      this.deleteDialog = false
+      this.selectedTrial = null
     },
 
     openEditDrawer(trial) {

@@ -43,15 +43,10 @@
 
 <script>
 import { mapActions } from 'pinia'
-import { toast } from 'vue-sonner'
-
 import { useTrialsStore } from '@/store/trials'
-
 import DataTable from '@/components/dashboard/DataTable.vue'
 import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
-import { useTrialsStore } from '@/store/trials'
-import { mapActions } from 'pinia'
 import messages from '@/utils/messages.json'
 import { executeApiCallWithToasts } from '@/utils/helpers'
 

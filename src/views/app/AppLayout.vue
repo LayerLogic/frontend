@@ -2,8 +2,8 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarTrigger />
-    <section class="app-wrapper">
-      <div class="app-container">
+    <section class="flex">
+      <div class="flex flex-col w-full min-h-screen">
         <RouterView />
       </div>
     </section>
@@ -11,9 +11,7 @@
 </template>
 
 <script>
-import { mapState } from 'pinia'
 import { RouterView } from 'vue-router'
-import { useUserStore } from '@/store/user'
 
 import AppSidebar from '@/components/ui/AppSidebar.vue'
 import { SidebarTrigger, SidebarProvider } from '@/components/ui/sidebar'
@@ -26,25 +24,5 @@ export default {
     SidebarTrigger,
     SidebarProvider,
   },
-  data() {
-    return {
-      currentRole: '',
-    }
-  },
-  computed: {
-    ...mapState(useUserStore, ['username', 'role']),
-  },
 }
 </script>
-
-<style scoped>
-.app-wrapper {
-  display: flex;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-</style>

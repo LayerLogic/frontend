@@ -1,22 +1,14 @@
 <template>
-  <div class="researcher-view">
-    <div class="content">
-      <h2>Your Trials</h2>
-      <p>Here you can manage trials, you can create, edit, and delete trials.</p>
+  <div class="w-screen max-w-3/4">
+    <div class="container">
+      <h2 class="text-3xl tracking-tight font-bold">Your Trials</h2>
+      <p class="text-base text-muted-foreground">
+        Here you can manage trials, you can create, edit, and delete trials.
+      </p>
 
-      <!-- Actions -->
-      <search-actions
-        :searchQuery="searchQuery"
-        :filter-type="filterType"
-        @update:searchQuery="searchQuery = $event.target.value"
-        @set-filter-type="setFilterType"
-        @fetch-filtered-trials="fetchFilteredTrials"
-        @open-create-drawer="openCreateDrawer"
-      />
-
-      <!-- Trials Table -->
-      <TrialsTable
-        :trials="trials"
+      <!-- Search and Filter Actions with the dataTable-->
+      <DataTable
+        :data="trials"
         @edit="openEditDrawer"
         @delete="confirmDelete"
         @create="openCreateDrawer"
@@ -50,22 +42,22 @@
 </template>
 
 <script>
-import { api } from '@/api'
-import TrialsTable from '@/components/dashboard/TrialsTable.vue'
-import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
-import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
-import SearchActions from '@/components/dashboard/SearchActions.vue'
-import { useTrialsStore } from '@/store/trials'
 import { mapActions } from 'pinia'
 import { toast } from 'vue-sonner'
+
+import { useTrialsStore } from '@/store/trials'
+import { api } from '@/api'
+
+import DataTable from '@/components/dashboard/DataTable.vue'
+import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
+import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
 
 export default {
   name: 'ResearcherView',
   components: {
-    TrialsTable,
     TrialFormDrawer,
     DeleteConfirmationDialog,
-    SearchActions,
+    DataTable,
   },
   props: {
     username: {
@@ -194,9 +186,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.researcher-view {
-  padding-bottom: 20px;
-}
-</style>

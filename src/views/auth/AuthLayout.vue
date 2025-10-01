@@ -31,13 +31,13 @@ export default {
         >
           <RouterLink
             to="/auth/login"
-            class="inline-block px-4 border-l border-zinc-200 first:border-0 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors duration-200 [&.router-link-exact-active]:text-zinc-950 [&.router-link-exact-active:hover]:bg-transparent"
+            class="inline-block px-4 border-l border-border first:border-0 text-muted-foreground hover:text-primary hover:bg-muted transition-colors duration-200 [&.router-link-exact-active]:text-primary [&.router-link-exact-active:hover]:bg-transparent"
           >
             Login
           </RouterLink>
           <RouterLink
             to="/auth/register"
-            class="inline-block px-4 border-l border-zinc-200 first:border-0 text-zinc-400 hover:text-zinc-800 hover:bg-zinc-100 transition-colors duration-200 [&.router-link-exact-active]:text-zinc-950 [&.router-link-exact-active:hover]:bg-transparent"
+            class="inline-block px-4 border-l border-border first:border-0 text-muted-foreground hover:text-primary hover:bg-muted transition-colors duration-200 [&.router-link-exact-active]:text-primary [&.router-link-exact-active:hover]:bg-transparent"
           >
             Register
           </RouterLink>

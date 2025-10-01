@@ -2,19 +2,21 @@
   <div class="flex items-start justify-center p-8">
     <form
       @submit.prevent="handleLogin"
-      class="p-6 rounded-lg bg-white w-full max-w-96 border border-zinc-200 grid gap-4"
+      class="p-6 rounded-lg w-full max-w-96 border border-border grid gap-4 bg-white"
     >
       <div>
-        <h2 class="text-xl leading-7 font-normal text-left text-zinc-900">Login</h2>
-        <h3 class="text-sm leading-5 font-normal text-left text-zinc-600 mb-2">
+        <h2 class="text-xl leading-8 font-normal text-left text-zinc-950">Login</h2>
+        <h3 class="text-sm leading-5 font-normal text-left text-muted-foreground mb-2">
           Don't have an account?
-          <RouterLink to="/auth/register" class="text-zinc-900 hover:underline"
+          <RouterLink to="/auth/register" class="text-zinc-950 hover:underline"
             >Register</RouterLink
           >
         </h3>
       </div>
       <div class="grid gap-2">
-        <label for="email" class="block text-zinc-600 text-sm leading-5 font-normal">Email:</label>
+        <label for="email" class="block text-muted-foreground text-sm leading-5 font-normal"
+          >Email:</label
+        >
         <UiInput
           type="email"
           id="email"
@@ -24,7 +26,7 @@
         />
       </div>
       <div class="grid gap-2">
-        <label for="password" class="block text-zinc-600 text-sm leading-5 font-normal"
+        <label for="password" class="block text-muted-foreground text-sm leading-5 font-normal"
           >Password:</label
         >
         <UiInput type="password" id="password" v-model="password" required />
@@ -62,7 +64,6 @@ export default {
       }
       try {
         await this.loginUser(data)
-        toast.success('Login successful')
         this.$router.push({ name: 'dashboard' })
       } catch (error) {
         console.error(error)

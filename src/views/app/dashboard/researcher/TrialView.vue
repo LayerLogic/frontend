@@ -403,6 +403,7 @@ import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
 import { useTestsStore } from '@/store/tests'
+import { toast } from 'vue-sonner'
 import { mapState, mapWritableState, mapActions } from 'pinia'
 import {
   buildUIUrl,
@@ -417,7 +418,7 @@ import {
   resetEditingStates,
   toggleBoolStates,
   findIndexById,
-  executeApiCallWithToasts,
+  removeElemsById
 } from '@/utils/helpers'
 import messages from '@/utils/messages.json'
 
@@ -457,7 +458,7 @@ export default {
       return ['isEditingTestNotes', 'editedTestNotes']
     },
   },
-  
+
   async mounted() {
     const route = useRoute()
     this.isLoading = true
@@ -498,7 +499,7 @@ export default {
     resetEditingStates,
     toggleBoolStates,
     findIndexById,
-    executeApiCallWithToasts,
+    removeElemsById,
     resetStates(varsArray) {
       resetEditingStates(this, varsArray)
     },
@@ -543,62 +544,69 @@ export default {
       document.body.style.overflow = 'auto'
     },
     async updateTrial(trialId, trialData) {
-      //expects caller to handle thrown errors
+      //expects caller to handle thrown errors, called only after tests are appended to this.trial
       this.trial = await this.updateTrialStore(trialId, trialData)
+      return this.trial
     },
     async fetchTrialWithTests(trialId) {
-      await this.executeApiCallWithToasts(async () => {
+      const fetchedTrial = await this.executeApiCallWithToasts(async () => { //unused variable
         this.trial = await this.fetchTrialWithTestsStore(trialId)
+        return this.trial
       }, messages.fetching.general.failure)
     },
     async saveTestNotes() {
-      await this.executeApiCallWithToasts(
+      const newTest = await this.executeApiCallWithToasts( //unused variable
         async () => {
-          await this.updateTestStore(this.selectedTest.id || this.selectedTest._id, {
-            notes: this.editedTestNotes,
-          })
+          const newTest = await this.updateTestStore(
+            this.selectedTest.id || this.selectedTest._id,
+            { notes: this.editedTestNotes },
+          )
+          this.selectedTest.notes = this.editedTestNotes
+          // Update the test in the trial.tests array as well
+          const testIndex = this.findIndexById(this.trial.tests, this.selectedTest._id)
+          if (testIndex !== -1) {
+            this.trial.tests[testIndex].notes = this.editedTestNotes
+          }
+          this.cancelEditingTestNotes()
+          return newTest
         },
         messages.tests.updated.notes.failure,
         messages.tests.updated.notes.success,
       )
-      this.selectedTest.notes = this.editedTestNotes
-      // Update the test in the trial.tests array as well
-      const testIndex = this.findIndexById(this.trial.tests, this.selectedTest)
-      if (testIndex !== -1) {
-        this.trial.tests[testIndex].notes = this.editedTestNotes
-      }
-      this.cancelEditingTestNotes()
     },
     async saveTrialProcedures() {
-      await this.executeApiCallWithToasts(
-        () => {
-          this.updateTrial(this.trial._id, {
+      const updatedTrial = await this.executeApiCallWithToasts( //unused variable
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, {
             ...this.trial,
             procedures: this.editedTrialProcedures,
           })
+          this.resetStates(this.getTrialProceduresStates)
+          return updatedTrial
         },
         messages.trials.updated.procedures.failure,
         messages.trials.updated.procedures.success,
       )
-      this.resetStates(this.getTrialProceduresStates)
     },
     async saveTrialNotes() {
-      await this.executeApiCallWithToasts(
-        () => {
-          this.updateTrial(this.trial._id, {
+      const updatedTrial = await this.executeApiCallWithToasts( //unused variable
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, {
             ...this.trial,
             notes: this.editedTrialNotes,
           })
+          this.resetStates(this.getTrialNotesStates)
+          return updatedTrial
         },
         messages.trials.updated.notes.failure,
         messages.trials.updated.notes.success,
       )
-      this.resetStates(this.getTrialNotesStates)
     },
     async handleTagsUpdate(tags) {
-      await this.executeApiCallWithToasts(
-        () => {
-          this.updateTrial(this.trial._id, { ...this.trial, tags })
+      const updatedTrial = await this.executeApiCallWithToasts( //unused variable
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, { ...this.trial, tags })
+          return updatedTrial
         },
         messages.trials.updated.tags.failure,
         messages.trials.updated.tags.success,
@@ -607,15 +615,16 @@ export default {
     async deleteTest(testId) {
       const confirmed = window.confirm(messages.tests.deleted.confirm)
       if (!confirmed) return
-      await this.executeApiCallWithToasts(
-        () => {
-          this.deleteTestByTestIdStore(testId)
+      const success = await this.executeApiCallWithToasts( //backend returns success message, but unused
+        async () => {
+          await this.deleteTestByTestIdStore(testId)
+
+          //optimistic approach of removing the deleted test
+          this.trial.tests = this.removeElemsById(this.trial.tests, testId)
         },
         messages.tests.deleted.failure,
         messages.tests.deleted.success,
       )
-      //optimistic approach of removing the deleted test
-      this.trial.tests = this.trial.tests.filter((t) => t._id !== testId)
     },
     async loadNextTrial() {
       if (this.isLoading) return
@@ -645,6 +654,24 @@ export default {
         this.isLoading = false
       }
     },
+
+    /**
+    * Executes an API call and displays results
+    * @param {Function} apiCall The function to execute
+    * @param {String} errorMsg Error message to log to the console and display via toasts
+    * @param {String|null} [successMsg=null] Success message to display via toasts
+    * @returns {Promise<Object>} Result of the API call
+    */
+    async executeApiCallWithToasts(apiCall, errorMsg, successMsg=null) {
+      try {
+        const result = await apiCall()
+        if (successMsg) toast.success(successMsg)
+        return result
+      } catch (error) {
+        console.error(errorMsg,':', error)
+        toast.error(error.message ?? errorMsg)
+      }
+    }
   },
 }
 </script>

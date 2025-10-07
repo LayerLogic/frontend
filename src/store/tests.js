@@ -43,13 +43,13 @@ export const useTestsStore = defineStore('tests', {
     /**
      * @param {String} testId
      * @param {Object} testData
-     * @returns {Object}
+     * @returns {Object} The updated test object
      */
     async updateTestStore(testId, testData) {
       const testResponse = await updateTest(testId, testData)
       const data = handleApiResponse(testResponse, messages.tests.updated.general.failure)
       const test = TestSchema.parse(data)
-      return test //return updated test, though not used atm in TrialView
+      return test
     },
   },
 })

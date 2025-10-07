@@ -1,5 +1,3 @@
-import { toast } from "vue-sonner"
-
 /**
  * Resets states according to: booleans to false, strings to the empty string (''), and numbers to 0
  * @param {Object} state The reactive Vue state
@@ -23,8 +21,8 @@ export function toggleBoolStates(state, key) {
 
 /**
  * @param {Object[]} array An array of any type of elements that each have a readable id or _id attribute
- * @param {Object} element An element that has a readable id or _id attribute
- * @returns The index of the element in the array, otherwise -1
+ * @param {Object} element An id to search between element id's in the array
+ * @returns The index of the first element with the provided id in the array, otherwise -1
  */
 export function findIndexById(array, element) {
   const index = array.findIndex((e) => (e.id || e._id) === (element.id || element._id))
@@ -32,22 +30,11 @@ export function findIndexById(array, element) {
 }
 
 /**
- * Executes an API call and displays results
- * @param {Function} apiCall The function to execute 
- * @param {String} errorMsg Error message to log to the console and display via toasts
- * @param {String|null} [successMsg=null] Success message to display via toasts
- * @returns {Promise<Object>} Result of the API call
+ * @param {Object[]} array An array of any type of elements that each have a readable id or _id attribute
+ * @param {String} elementId An id to search between element id's in the array
+ * @returns A new array with the elements that have the id or _id of the provided element removed
  */
-export async function executeApiCallWithToasts(apiCall, errorMsg, successMsg=null) {
-  try {
-    const result = await apiCall()
-    if (successMsg) toast.success(successMsg)
-    return result
-  } catch (error) {
-    console.error(errorMsg,':', error)
-    toast.error(error.message ?? errorMsg)
-    throw error
-  }
+export function removeElemsById(array, elementId) {
+  const newArray = array.filter((e) => (e.id || e._id) !== elementId)
+  return newArray
 }
-
-

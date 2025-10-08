@@ -14,8 +14,7 @@
         @create="openCreateDrawer"
       />
 
-      <!-- Edit Drawer -->
-      <TrialFormDrawer
+      <FormDrawer
         v-model:visible="editDrawer"
         title="Edit trial"
         :trial="selectedTrial"
@@ -23,8 +22,7 @@
         @close="closeDrawer"
       />
 
-      <!-- Create Drawer -->
-      <TrialFormDrawer
+      <FormDrawer
         v-model:visible="createDrawer"
         title="Create new trial"
         @submit="handleCreateTrial"
@@ -45,7 +43,7 @@
 import { mapActions } from 'pinia'
 import { useTrialsStore } from '@/store/trials'
 import DataTable from '@/components/dashboard/DataTable.vue'
-import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
+import FormDrawer from '@/components/dashboard/FormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
 import messages from '@/utils/messages.json'
 import { toast } from 'vue-sonner'
@@ -54,9 +52,9 @@ import { removeElemsById } from '@/utils/helpers'
 export default {
   name: 'ResearcherView',
   components: {
-    TrialFormDrawer,
     DeleteConfirmationDialog,
     DataTable,
+    FormDrawer,
   },
   props: {
     username: {
@@ -121,11 +119,11 @@ export default {
 
     async handleCreateTrial(trialData) {
       if (!trialData) return
-      const newTrial = await this.executeApiCallWithToasts( //unused variable
+      await this.executeApiCallWithToasts(
         async () => {
           const newTrial = await this.createTrialStore(trialData)
           await this.fetchTrials()
-          this.createDrawer = true
+          this.createDrawer = false
           return newTrial
         },
         messages.trials.created.failure,
@@ -135,7 +133,7 @@ export default {
 
     async handleUpdateTrial(trialData) {
       if (!this.selectedTrial) return
-      const updatedTrial = await this.executeApiCallWithToasts( //unused variable
+      await this.executeApiCallWithToasts(
         async () => {
           const updatedTrial = await this.updateTrialStore(this.selectedTrial._id, trialData)
           await this.fetchTrials()
@@ -149,18 +147,14 @@ export default {
     },
 
     async deleteTrial() {
-      const deleteInfoMsg = await this.executeApiCallWithToasts(
-        async () => {
-          const deleteInfoMsg = await this.deleteTrialStore(this.selectedTrial._id)
-          this.trials = this.removeElemsById(this.trials, this.selectedTrial._id)
-          this.allTrials = this.removeElemsById(this.allTrials, this.selectedTrial._id)
-          this.deleteDialog = false
-          this.selectedTrial = null
-          return deleteInfoMsg
-        },
-        messages.trials.deleted.failure,
-        messages.trials.deleted.success,
-      )
+      const deleteInfoMsg = await this.executeApiCallWithToasts(async () => {
+        const deleteInfoMsg = await this.deleteTrialStore(this.selectedTrial._id)
+        this.trials = this.removeElemsById(this.trials, this.selectedTrial._id)
+        this.allTrials = this.removeElemsById(this.allTrials, this.selectedTrial._id)
+        this.deleteDialog = false
+        this.selectedTrial = null
+        return deleteInfoMsg
+      }, messages.trials.deleted.failure)
 
       if (deleteInfoMsg) toast.success(deleteInfoMsg)
     },
@@ -186,22 +180,22 @@ export default {
     },
 
     /**
-    * Executes an API call and displays results
-    * @param {Function} apiCall The function to execute
-    * @param {String} errorMsg Error message to log to the console and display via toasts
-    * @param {String|null} [successMsg=null] Success message to display via toasts
-    * @returns {Promise<Object>} Result of the API call
-    */
-    async executeApiCallWithToasts(apiCall, errorMsg, successMsg=null) {
+     * Executes an API call and displays results
+     * @param {Function} apiCall The function to execute
+     * @param {String} errorMsg Error message to log to the console and display via toasts
+     * @param {String|null} [successMsg=null] Success message to display via toasts
+     * @returns {Promise<Object>} Result of the API call
+     */
+    async executeApiCallWithToasts(apiCall, errorMsg, successMsg = null) {
       try {
         const result = await apiCall()
         if (successMsg) toast.success(successMsg)
         return result
       } catch (error) {
-        console.error(errorMsg,':', error)
+        console.error(errorMsg, ':', error)
         toast.error(error.message ?? errorMsg)
       }
-    }
+    },
   },
 }
 </script>

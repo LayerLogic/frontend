@@ -2,10 +2,8 @@
   <SidebarProvider>
     <AppSidebar />
     <SidebarTrigger />
-    <section class="flex">
-      <div class="flex flex-col w-full min-h-screen">
-        <RouterView />
-      </div>
+    <section class="flex flex-col min-h-screen w-full">
+      <RouterView />
     </section>
   </SidebarProvider>
 </template>

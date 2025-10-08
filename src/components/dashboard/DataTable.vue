@@ -60,7 +60,7 @@ const columns = [
   {
     accessorKey: 'name',
     header: 'Name',
-    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('name')),
+    cell: ({ row }) => h('div', { class: '' }, row.getValue('name')),
   },
   {
     accessorKey: 'tags',
@@ -140,7 +140,9 @@ const columns = [
           h(
             DropdownMenuItem,
             {
-              onClick: () => emit('inspect', row.original),
+              onClick: () => {
+                router.push(`trial/${row.original._id}`)
+              },
               class: 'mx-1 mt-1 cursor-pointer',
             },
             () => [h(Eye, { class: 'mr-0.5 h-4 w-4' }), 'Inspect'],
@@ -343,7 +345,7 @@ const table = useVueTable({
     <div class="flex items-center justify-end space-x-2 py-4">
       <div class="flex-1 text-sm text-muted-foreground">
         Showing {{ table.getPaginationRowModel().rows.length }} of
-        {{ table.getFilteredRowModel().rows.length }} filtered row(s)
+        {{ table.getFilteredRowModel().rows.length }} row(s)
       </div>
       <div class="space-x-2">
         <Button

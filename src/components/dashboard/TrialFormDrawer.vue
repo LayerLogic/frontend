@@ -34,10 +34,7 @@
               </div>
             </div>
             <div>
-              <TagsInput 
-                @update:tags="handleTagsUpdate" 
-                :initial-tags="formData.tags"
-              />
+              <TagsInput @update:tags="handleTagsUpdate" :initial-tags="formData.tags" />
               <v-select
                 class="default-tags-select"
                 label="Or select from default tags"
@@ -146,7 +143,20 @@ export default {
   data() {
     return {
       tagChoices: [
-        "Customer","Listeria","Good","Bad","OK","KF","Leröy","MF","DC","Negative","Positive","Unclear","Confirmed P","Confirmed N"
+        'Customer',
+        'Listeria',
+        'Good',
+        'Bad',
+        'OK',
+        'KF',
+        'Leröy',
+        'MF',
+        'DC',
+        'Negative',
+        'Positive',
+        'Unclear',
+        'Confirmed P',
+        'Confirmed N',
       ],
       selectTags: [],
       formData: {
@@ -211,19 +221,19 @@ export default {
       this.resetForm()
       this.isVisible = false
     },
-    handleTagsUpdate(tags){
+    handleTagsUpdate(tags) {
       this.formData.tags = tags
-      const filteredSelectTags = this.formData.tags.filter(tag => this.tagChoices.includes(tag))
+      const filteredSelectTags = this.formData.tags.filter((tag) => this.tagChoices.includes(tag))
       this.selectTags = filteredSelectTags
     },
     handleSelectTagsUpdate(tags) {
       let updatedTags = [...this.formData.tags]
 
       updatedTags = updatedTags.filter(
-        tag => !this.tagChoices.includes(tag) || tags.includes(tag)
+        (tag) => !this.tagChoices.includes(tag) || tags.includes(tag),
       )
 
-      tags.forEach(tag => {
+      tags.forEach((tag) => {
         if (!updatedTags.includes(tag)) {
           updatedTags.push(tag)
         }
@@ -290,6 +300,11 @@ export default {
 .default-tags-select {
   border-top: 1px solid var(--color-border);
   border-radius: 6px;
+}
+
+.v-input--density-default .v-field--variant-filled {
+  height: 36px !important;
+  --v-input-control-height: 6px !important;
 }
 
 .default-tags-select:focus-within {

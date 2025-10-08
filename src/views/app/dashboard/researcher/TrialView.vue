@@ -1,444 +1,451 @@
 <template>
-  <div class="trial-view">
-    <div v-if="trial && !isLoading" class="card trial-header">
-      <div class="card-header">
-        <h3 class="card-title">
+  <div class="flex flex-col w-auto">
+    <div v-if="trial && !isLoading" class="p-4 min-w-auto border-b border-muted">
+      <div class="flex justify-between items-start">
+        <h2 class="text-2xl font-extrabold text-foreground">
           {{ trial.name }}
-        </h3>
-        <div class="flex gap-2">
-          <button
-            class="btn btn-secondary"
+        </h2>
+        <div class="flex items-center gap-2">
+          <UiButton
+            variant="outline"
             @click="loadPrevTrial"
-            :disabled="trialsStore.currentTrialIndex === 0 || isLoading"
+            :disabled="currentTrialIndex === 0 || isLoading"
           >
-            Prev
-          </button>
-          <button
-            class="btn btn-secondary"
+            Prev trial
+          </UiButton>
+          <UiButton
+            variant="outline"
             @click="loadNextTrial"
-            :disabled="
-              trialsStore.currentTrialIndex === trialsStore.trialsIDs.length - 1 || isLoading
-            "
+            :disabled="currentTrialIndex === trialsIDs.length - 1 || isLoading"
           >
-            Next
-          </button>
-          <button class="btn btn-primary" @click="goToUI" :disabled="isLoading">New Test</button>
+            Next trial
+          </UiButton>
+          <UiButton @click="goToUI" :disabled="isLoading">New Test</UiButton>
         </div>
       </div>
-      <div class="trial-view-tags-container">
-        <div>
-          <TagsInput :initial-tags="trial.tags" :showHint="false" @update:tags="handleTagsUpdate" />
-        </div>
+      <div class="max-w-fit mt-4">
+        <TagsInput :initial-tags="trial.tags" :showHint="false" @update:tags="handleTagsUpdate" />
       </div>
     </div>
     <div v-else>
-      <p>Loading trial...</p>
+      <p class="p-4">Loading trial...</p>
     </div>
 
-    <div v-if="trial && !isLoading" class="trial-info">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Procedures</h3>
-        </div>
-        <div class="card-content">
-          <p v-html="trial.procedures"></p>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">Notes</h3>
-        </div>
-        <div class="card-content">
-          <p v-html="trial.notes"></p>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="!isLoading">
-      <p>Loading trial...</p>
-    </div>
-    <div v-if="trial && trial.tests && trial.tests.length" class="trial-tests">
-      <div v-for="test in trial.tests" :key="test.id" class="card">
-        <div class="card-header">
-          <div>
-            <h3 class="card-title">{{ test.type }} Analyses</h3>
-            <p class="card-description">
-              {{
-                new Date(test.createdAt).toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              }}
-            </p>
-          </div>
-          <div class="card-actions">
-            <v-chip size="small">Channel {{ test.channel }}</v-chip>
-            <button
-              class="btn btn-outline btn-sm"
-              @click="openTestDetailsDialog(test)"
-              title="View test details"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
+    <div class="p-4 grid grid-cols-1 lg:grid-cols-[1.5fr_0.5fr] gap-4 items-start">
+      <div
+        v-if="trial && trial.tests && trial.tests.length"
+        class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4"
+      >
+        <Card v-for="test in trial.tests" :key="test._id">
+          <CardHeader class="flex flex-row justify-between items-start space-y-0">
+            <div>
+              <CardTitle class="text-xl capitalize flex items-center justify-center gap-2"
+                >{{ test.type }}
+                Analyses
+                <Badge variant="outline"> Channel {{ test.channel }} </Badge>
+              </CardTitle>
+
+              <CardDescription class="text-sm">
+                {{
+                  new Date(test.createdAt).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                }}
+              </CardDescription>
+            </div>
+            <div class="flex gap-1.5 items-center">
+              <UiButton
+                variant="outline"
+                size="icon"
+                class="h-7 w-7"
+                @click="openTestDetailsDialog(test)"
+                title="View test details"
               >
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              Details
-            </button>
-          </div>
-          <button class="btn btn-danger" @click="deleteTest(test._id, trial._id)">
-            <v-icon small>mdi-delete</v-icon>
-            Delete
-          </button>
-        </div>
-        <div class="card-content">
-          <Chart
-            v-if="test.measurements && test.measurements.length"
-            type="line"
-            :data="getChartData(test.type, test.measurements)"
-            :options="test.type === 'gate' ? gateChartOptions : timeChartOptions"
-            :height="300"
-          />
-          <p v-else>No measurement data available for this test.</p>
-        </div>
+                <Eye class="h-4 w-4" />
+              </UiButton>
+              <UiButton
+                variant="outline"
+                size="icon"
+                class="h-7 w-7 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50"
+                @click="deleteTest(test._id, trial._id)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </UiButton>
+            </div>
+          </CardHeader>
+          <CardContent class="pt-2">
+            <Chart
+              v-if="test.measurements && test.measurements.length"
+              type="line"
+              :data="getChartData(test.type, test.measurements)"
+              :options="defaultChartOptions"
+              :height="300"
+            />
+            <p v-else class="text-sm text-muted-foreground">
+              No measurement data available for this test.
+            </p>
+          </CardContent>
+        </Card>
       </div>
-    </div>
-    <div v-else-if="trial && !isLoading">
-      <p>No tests found for this trial.</p>
+      <div v-else-if="trial && !isLoading">
+        <p class="text-muted-foreground">No tests found for this trial.</p>
+      </div>
+
+      <div v-if="trial && !isLoading" class="flex flex-col gap-4">
+        <Card>
+          <CardHeader
+            class="cursor-pointer flex flex-row justify-between items-center space-y-0"
+            @click="toggleBool('showTrialProcedures')"
+          >
+            <CardTitle>Procedures</CardTitle>
+            <UiButton variant="ghost" size="icon">
+              <ChevronDown
+                :class="[
+                  'h-4 w-4 transition-transform duration-200 shrink-0',
+                  { 'rotate-180': showTrialProcedures },
+                ]"
+              />
+            </UiButton>
+          </CardHeader>
+
+          <CardContent
+            v-if="!isEditingTrialProcedures && showTrialProcedures"
+            class="cursor-pointer"
+            @click="startEditingTrialProcedures"
+          >
+            <div
+              v-if="trial.procedures"
+              v-html="trial.procedures"
+              class="text-sm whitespace-pre-wrap break-words"
+            ></div>
+            <p v-else class="text-sm text-muted-foreground italic">Click to add procedures...</p>
+          </CardContent>
+
+          <CardContent v-if="isEditingTrialProcedures && showTrialProcedures">
+            <UiTextarea
+              v-model="editedTrialProcedures"
+              placeholder="Add your procedures here..."
+              rows="4"
+              @keydown.ctrl.enter="saveTrialProcedures"
+              @keydown.esc="cancelEditingTrialProcedures"
+            />
+            <div class="flex justify-end gap-2 mt-3">
+              <UiButton variant="secondary" size="sm" @click="cancelEditingTrialProcedures">
+                Cancel
+              </UiButton>
+              <UiButton size="sm" @click="saveTrialProcedures">
+                <Save class="h-4 w-4 mr-2" />
+                Save
+              </UiButton>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader
+            class="cursor-pointer flex flex-row justify-between items-center space-y-0"
+            @click="toggleBool('showTrialNotes')"
+          >
+            <CardTitle>Notes</CardTitle>
+            <UiButton variant="ghost" size="icon">
+              <ChevronDown
+                :class="[
+                  'h-4 w-4 transition-transform duration-200 shrink-0',
+                  { 'rotate-180': showTrialNotes },
+                ]"
+              />
+            </UiButton>
+          </CardHeader>
+
+          <CardContent
+            v-if="!isEditingTrialNotes && showTrialNotes"
+            class="cursor-pointer"
+            @click="startEditingTrialNotes"
+          >
+            <div
+              v-if="trial.notes"
+              v-html="trial.notes"
+              class="text-sm whitespace-pre-wrap break-words"
+            ></div>
+            <p v-else class="text-sm text-muted-foreground italic">Click to add notes...</p>
+          </CardContent>
+
+          <CardContent v-if="isEditingTrialNotes && showTrialNotes">
+            <UiTextarea
+              v-model="editedTrialNotes"
+              placeholder="Add your notes here..."
+              rows="4"
+              @keydown.ctrl.enter="saveTrialNotes"
+              @keydown.esc="cancelEditingTrialNotes"
+            />
+            <div class="flex justify-end gap-2 mt-3">
+              <UiButton variant="secondary" size="sm" @click="cancelEditingTrialNotes">
+                Cancel
+              </UiButton>
+              <UiButton size="sm" @click="saveTrialNotes">
+                <Save class="h-4 w-4 mr-2" />
+                Save
+              </UiButton>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div v-else-if="!isLoading">
+        <p class="text-muted-foreground">Loading trial...</p>
+      </div>
     </div>
 
     <!-- Test Details Dialog -->
-    <div v-if="showTestDialog" class="dialog-overlay" @click="closeTestDialog">
-      <div class="dialog" @click.stop>
-        <div class="dialog-header">
-          <h2 class="dialog-title">Test Details</h2>
-          <button class="dialog-close" @click="closeTestDialog">
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
+    <UiDialog :open="showTestDialog" @update:open="(val) => !val && closeTestDialog()">
+      <DialogContent class="max-w-[800px] max-h-[90vh] flex flex-col p-0">
+        <DialogHeader class="p-6 pb-4 border-b">
+          <DialogTitle class="text-2xl">Test Details</DialogTitle>
+        </DialogHeader>
 
-        <div v-if="selectedTest" class="dialog-content">
+        <div v-if="selectedTest" class="flex-1 overflow-y-auto p-6 space-y-8">
           <!-- Test Overview -->
-          <div class="detail-section">
-            <h3 class="section-title">Test Overview</h3>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <label>Test Type:</label>
-                <span>{{ selectedTest.type }}</span>
+          <div>
+            <h3 class="text-lg font-semibold mb-4 pb-2 border-b-2">Test Overview</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Test Type:</UiLabel>
+                <p class="text-sm">{{ selectedTest.type }}</p>
               </div>
-              <div class="detail-item">
-                <label>Channel:</label>
-                <span>{{ selectedTest.channel }}</span>
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Channel:</UiLabel>
+                <p class="text-sm">{{ selectedTest.channel }}</p>
               </div>
-              <div class="detail-item">
-                <label>Created:</label>
-                <span>{{ formatDate(selectedTest.createdAt) }}</span>
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Created:</UiLabel>
+                <p class="text-sm">{{ formatDate(selectedTest.createdAt) }}</p>
               </div>
-              <div class="detail-item">
-                <label>Test ID:</label>
-                <span class="monospace">{{ selectedTest.id || selectedTest._id }}</span>
-              </div>
-              <div v-if="selectedTest.commands" class="detail-section">
-                <h3 class="section-title">Commands</h3>
-                <div class="commands-content">
-                  <pre>{{ selectedTest.commands }}</pre>
-                </div>
-              </div>
-              <!-- Test Settings (if available) -->
-              <div v-if="selectedTest.settings" class="detail-section">
-                <h3 class="section-title">Test Settings</h3>
-                <div class="detail-grid">
-                  <!-- Gate test settings -->
-                  <template v-if="selectedTest.type === 'gate'">
-                    <div class="detail-item">
-                      <label>Max Gate Voltage:</label>
-                      <span>{{ selectedTest.settings.vgMax }} V</span>
-                    </div>
-                    <div class="detail-item">
-                      <label>Min Gate Voltage:</label>
-                      <span>{{ selectedTest.settings.vgMin }} V</span>
-                    </div>
-                    <div class="detail-item">
-                      <label>Gate Step:</label>
-                      <span>{{ selectedTest.settings.gateStep }} V</span>
-                    </div>
-                  </template>
-
-                  <!-- Time test settings -->
-                  <template v-else-if="selectedTest.type === 'time'">
-                    <div class="detail-item">
-                      <label>Gate Voltage:</label>
-                      <span>{{ selectedTest.settings.gateV }} V</span>
-                    </div>
-                    <div class="detail-item">
-                      <label>Delay:</label>
-                      <span>{{ selectedTest.settings.delay }} ms</span>
-                    </div>
-                  </template>
-                </div>
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Test ID:</UiLabel>
+                <code class="text-xs bg-muted px-1 py-0.5 rounded">{{
+                  selectedTest.id || selectedTest._id
+                }}</code>
               </div>
             </div>
           </div>
 
-          <!-- Test Configuration (if available) -->
-          <div class="detail-section">
-            <h3 class="section-title">Notes</h3>
+          <!-- Commands -->
+          <div v-if="selectedTest.commands">
+            <h3 class="text-lg font-semibold mb-4 pb-2 border-b-2">Commands</h3>
+            <div class="bg-muted border rounded-lg p-4">
+              <pre class="text-xs whitespace-pre-wrap break-words">{{ selectedTest.commands }}</pre>
+            </div>
+          </div>
 
-            <!-- View Mode -->
-            <div v-if="!isEditingNotes" class="notes-content" @click="startEditingNotes">
-              <p v-if="selectedTest.notes" v-html="selectedTest.notes"></p>
-              <p v-else class="empty-notes">Click to add notes...</p>
+          <!-- Test Settings -->
+          <div v-if="selectedTest.settings">
+            <h3 class="text-lg font-semibold mb-4 pb-2 border-b-2">Test Settings</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <template v-if="selectedTest.type === 'gate'">
+                <div class="space-y-1">
+                  <UiLabel class="text-muted-foreground">Max Gate Voltage:</UiLabel>
+                  <p class="text-sm">{{ selectedTest.settings.vgMax }} V</p>
+                </div>
+                <div class="space-y-1">
+                  <UiLabel class="text-muted-foreground">Min Gate Voltage:</UiLabel>
+                  <p class="text-sm">{{ selectedTest.settings.vgMin }} V</p>
+                </div>
+                <div class="space-y-1">
+                  <UiLabel class="text-muted-foreground">Gate Step:</UiLabel>
+                  <p class="text-sm">{{ selectedTest.settings.gateStep }} V</p>
+                </div>
+              </template>
+
+              <template v-else-if="selectedTest.type === 'time'">
+                <div class="space-y-1">
+                  <UiLabel class="text-muted-foreground">Gate Voltage:</UiLabel>
+                  <p class="text-sm">{{ selectedTest.settings.gateV }} V</p>
+                </div>
+                <div class="space-y-1">
+                  <UiLabel class="text-muted-foreground">Delay:</UiLabel>
+                  <p class="text-sm">{{ selectedTest.settings.delay }} ms</p>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <h3 class="text-lg font-semibold mb-4 pb-2 border-b-2">Notes</h3>
+            <div
+              v-if="!isEditingTestNotes"
+              class="bg-muted border rounded-lg p-4 cursor-pointer transition-all hover:border-primary hover:ring-2 hover:ring-primary/20"
+              @click="startEditingTestNotes"
+            >
+              <div v-if="selectedTest.notes" v-html="selectedTest.notes" class="text-sm"></div>
+              <p v-else class="text-sm text-muted-foreground italic">Click to add notes...</p>
             </div>
 
-            <!-- Edit Mode -->
-            <div v-if="isEditingNotes" class="notes-edit-container">
-              <textarea
-                v-model="editedNotes"
-                class="notes-textarea"
+            <div v-if="isEditingTestNotes" class="space-y-3">
+              <UiTextarea
+                v-model="editedTestNotes"
                 placeholder="Add your notes here..."
                 rows="4"
-                @keydown.ctrl.enter="saveNotes"
-                @keydown.esc="cancelEditingNotes"
-              ></textarea>
-              <div class="notes-actions">
-                <button class="btn btn-secondary btn-sm" @click="cancelEditingNotes">Cancel</button>
-                <button class="btn btn-primary btn-sm" @click="saveNotes">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                    ></path>
-                    <polyline points="17,21 17,13 7,13 7,21"></polyline>
-                    <polyline points="7,3 7,8 15,8"></polyline>
-                  </svg>
+                @keydown.ctrl.enter="saveTestNotes"
+                @keydown.esc="cancelEditingTestNotes"
+              />
+              <div class="flex justify-end gap-2">
+                <UiButton variant="secondary" size="sm" @click="cancelEditingTestNotes">
+                  Cancel
+                </UiButton>
+                <UiButton size="sm" @click="saveTestNotes">
+                  <Save class="h-4 w-4 mr-2" />
                   Save
-                </button>
+                </UiButton>
               </div>
             </div>
           </div>
 
           <!-- Measurements Summary -->
-          <div
-            v-if="selectedTest.measurements && selectedTest.measurements.length"
-            class="detail-section"
-          >
-            <h3 class="section-title">Measurements Summary</h3>
-            <div class="detail-grid">
-              <div class="detail-item">
-                <label>Total Points:</label>
-                <span>{{ selectedTest.measurements.length }}</span>
+          <div v-if="selectedTest.measurements && selectedTest.measurements.length">
+            <h3 class="text-lg font-semibold mb-4 pb-2 border-b-2">Measurements Summary</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Total Points:</UiLabel>
+                <p class="text-sm">{{ selectedTest.measurements.length }}</p>
               </div>
-              <div class="detail-item">
-                <label>Voltage X Range:</label>
-                <span>{{ getVoltageRange(selectedTest.measurements) }}</span>
+              <div class="space-y-1">
+                <UiLabel class="text-muted-foreground">Voltage X Range:</UiLabel>
+                <p class="text-sm">{{ getVoltageRange(selectedTest.measurements) }}</p>
               </div>
-              <div v-if="selectedTest.type === 'gate'" class="detail-item">
-                <label>Gate Voltage Range:</label>
-                <span>{{ getGateVoltageRange(selectedTest.measurements) }}</span>
+              <div v-if="selectedTest.type === 'gate'" class="space-y-1">
+                <UiLabel class="text-muted-foreground">Gate Voltage Range:</UiLabel>
+                <p class="text-sm">{{ getGateVoltageRange(selectedTest.measurements) }}</p>
               </div>
-              <div v-else class="detail-item">
-                <label>Time Range:</label>
-                <span>{{ getTimeRange(selectedTest.measurements) }}</span>
+              <div v-else class="space-y-1">
+                <UiLabel class="text-muted-foreground">Time Range:</UiLabel>
+                <p class="text-sm">{{ getTimeRange(selectedTest.measurements) }}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="dialog-footer">
-          <button class="btn btn-secondary" @click="closeTestDialog">Close</button>
-          <button
-            class="btn btn-primary"
-            @click="exportTestData"
+        <DialogFooter class="p-6 pt-4 border-t">
+          <UiButton variant="secondary" @click="closeTestDialog">Close</UiButton>
+          <UiButton
+            @click="exportTestData(selectedTest)"
             v-if="selectedTest && selectedTest.measurements"
           >
             Export Data
-          </button>
-        </div>
-      </div>
-    </div>
+          </UiButton>
+        </DialogFooter>
+      </DialogContent>
+    </UiDialog>
   </div>
 </template>
 
 <script>
 import TagsInput from '@/components/testing/TagsInput.vue'
+import { defaultChartOptions, getChartData } from '@/utils/chart'
 import { useRoute } from 'vue-router'
 import Chart from 'primevue/chart'
 import { useTrialsStore } from '@/store/trials'
-import { deleteTestByTestId } from '@/api/test'
-import { mapStores, mapActions } from 'pinia'
-import { updateTest } from '@/api/test'
+import { useTestsStore } from '@/store/tests'
+import { toast } from 'vue-sonner'
+import { mapState, mapWritableState, mapActions } from 'pinia'
+import {
+  buildUIUrl,
+  exportTestData,
+  formatDate,
+  formatConfigKey,
+  getVoltageRange,
+  getGateVoltageRange,
+  getTimeRange,
+} from '@/utils/data'
+import {
+  resetEditingStates,
+  toggleBoolStates,
+  findIndexById,
+  removeElemsById,
+} from '@/utils/helpers'
+import messages from '@/utils/messages.json'
+import { Button as UiButton } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog as UiDialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Textarea as UiTextarea } from '@/components/ui/textarea'
+import { Label as UiLabel } from '@/components/ui/label'
+import { Eye, Trash2, Save, ChevronDown } from 'lucide-vue-next'
 
 export default {
   name: 'TrialView',
   components: {
     TagsInput,
     Chart,
+    UiButton,
+    Badge,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+    UiDialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    UiTextarea,
+    UiLabel,
+    Eye,
+    Trash2,
+    Save,
+    ChevronDown,
   },
   data() {
     return {
+      defaultChartOptions,
       trial: null,
+      isEditingTrialProcedures: false,
+      showTrialProcedures: false,
+      editedTrialProcedures: '',
+      isEditingTrialNotes: false,
+      showTrialNotes: false,
+      editedTrialNotes: '',
+      isEditingTestNotes: false,
+      editedTestNotes: '',
       showTestDialog: false,
       selectedTest: null,
       isLoading: false,
-      gateChartOptions: {
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#495057',
-              font: {
-                size: 12,
-              },
-            },
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            stacked: true,
-            title: {
-              display: true,
-              text: 'Gate Voltage (V)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-          y: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Voltage X (mV)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-        },
-        elements: {
-          line: {
-            tension: 0.4,
-          },
-          point: {
-            radius: 1,
-          },
-        },
-      },
-      timeChartOptions: {
-        interaction: {
-          mode: 'index',
-          intersect: false,
-        },
-        plugins: {
-          legend: {
-            labels: {
-              color: '#495057',
-              font: {
-                size: 12,
-              },
-            },
-          },
-          tooltip: {
-            mode: 'index',
-            intersect: false,
-          },
-        },
-        scales: {
-          x: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Time (S)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-          y: {
-            type: 'linear',
-            title: {
-              display: true,
-              text: 'Voltage X (mV)',
-              color: '#2c3e50',
-              font: {
-                weight: 'bold',
-              },
-            },
-            ticks: {
-              color: '#495057',
-            },
-          },
-        },
-        elements: {
-          line: {
-            tension: 0.4,
-          },
-          point: {
-            radius: 1,
-          },
-        },
-      },
-      isEditingNotes: false,
-      editedNotes: '',
     }
   },
   computed: {
-    ...mapStores(useTrialsStore),
+    ...mapState(useTrialsStore, ['trialsIDs']),
+    ...mapWritableState(useTrialsStore, ['currentTrialIndex']),
+    getTrialProceduresStates() {
+      return ['editedTrialProcedures', 'showTrialProcedures', 'isEditingTrialProcedures']
+    },
+    getTrialNotesStates() {
+      return ['editedTrialNotes', 'showTrialNotes', 'isEditingTrialNotes']
+    },
+    getTestNotesStates() {
+      return ['isEditingTestNotes', 'editedTestNotes']
+    },
   },
+
   async mounted() {
     const route = useRoute()
     this.isLoading = true
 
     try {
-      await this.trialsStore.fetchTrialsStore() //might be redundant
+      await this.fetchTrialsStore()
 
-      // Set current index to the route's trialId
-      const index = this.trialsStore.trialsIDs.indexOf(route.params.trialId)
+      const index = this.trialsIDs.indexOf(route.params.trialId)
       if (index >= 0) {
-        this.trialsStore.currentTrialIndex = index
+        this.currentTrialIndex = index
       }
       await this.fetchTrialWithTests(route.params.trialId)
     } finally {
@@ -446,601 +453,195 @@ export default {
     }
   },
   methods: {
-    ...mapActions(useTrialsStore, ['fetchTrialWithTestsStore', 'updateTrialStore']),
-    async fetchTrialWithTests(trialId) {
-      try {
-        this.trial = await this.fetchTrialWithTestsStore(trialId)
-      } catch (error) {
-        console.error('Error fetching trial or tests:', error)
-      }
+    ...mapActions(useTrialsStore, [
+      'fetchTrialWithTestsStore',
+      'updateTrialStore',
+      'fetchTrialsStore',
+      'prevTrial',
+      'nextTrial',
+    ]),
+    ...mapActions(useTestsStore, ['updateTestStore', 'deleteTestByTestIdStore']),
+    getChartData,
+    exportTestData,
+    buildUIUrl,
+    formatDate,
+    formatConfigKey,
+    getVoltageRange,
+    getGateVoltageRange,
+    getTimeRange,
+    resetEditingStates,
+    toggleBoolStates,
+    findIndexById,
+    removeElemsById,
+    resetStates(varsArray) {
+      resetEditingStates(this, varsArray)
     },
-    startEditingNotes() {
-      this.isEditingNotes = true
-      this.editedNotes = this.selectedTest.notes || ''
+    toggleBool(boolVar) {
+      toggleBoolStates(this, boolVar)
     },
-
-    async saveNotes() {
-      try {
-        // Call your API to update the test notes
-        await updateTest(this.selectedTest.id || this.selectedTest._id, {
-          notes: this.editedNotes,
-        })
-
-        // Update the local data
-        this.selectedTest.notes = this.editedNotes
-
-        // Update the test in the trial.tests array as well
-        const testIndex = this.trial.tests.findIndex(
-          (t) => (t.id || t._id) === (this.selectedTest.id || this.selectedTest._id),
-        )
-        if (testIndex !== -1) {
-          this.trial.tests[testIndex].notes = this.editedNotes
-        }
-
-        this.isEditingNotes = false
-      } catch (error) {
-        console.error('Error saving notes:', error)
-        // You might want to show a toast/notification here
-      }
+    cancelEditingTestNotes() {
+      this.resetStates(this.getTestNotesStates)
     },
-
-    cancelEditingNotes() {
-      this.isEditingNotes = false
-      this.editedNotes = ''
+    cancelEditingTrialProcedures() {
+      this.resetStates(this.getTrialProceduresStates)
     },
-    async updateTrial(trialId, trialData) {
-      try {
-        this.trial = await this.updateTrialStore(trialId, trialData)
-      } catch (error) {
-        console.error('Error updating trial tags, notes or procedures: ', error)
-      }
+    cancelEditingTrialNotes() {
+      this.resetStates(this.getTrialNotesStates)
     },
-    getChartData(testType, measurements) {
-      // Add safety check
-      if (!measurements || !Array.isArray(measurements) || measurements.length === 0) {
-        return {
-          labels: [],
-          datasets: [
-            {
-              label: 'Voltage X',
-              data: [],
-              borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-              pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-            },
-          ],
-        }
-      }
-
-      return {
-        labels:
-          testType === 'gate'
-            ? measurements.map((item) => item.gateV)
-            : measurements.map((item) => item.time),
-        datasets: [
-          {
-            label: 'Voltage X',
-            data: measurements.map((item) => item.voltageX),
-            borderColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-            pointBackgroundColor: testType !== 'gate' ? '#f97316' : '#36A2EB',
-          },
-        ],
-      }
+    startEditingTestNotes() {
+      this.isEditingTestNotes = true
+      this.editedTestNotes = this.selectedTest.notes || ''
+    },
+    startEditingTrialProcedures() {
+      this.isEditingTrialProcedures = true
+      this.editedTrialProcedures = this.trial.procedures || ''
+    },
+    startEditingTrialNotes() {
+      this.isEditingTrialNotes = true
+      this.editedTrialNotes = this.trial.notes || ''
     },
     goToUI() {
-      const id = this.trial._id
-      const url = `https://layerlogic.github.io/research-test-ui?id=${encodeURIComponent(id)}`
-      window.open(url, '_blank')
+      window.open(buildUIUrl(this.trial._id), '_blank')
     },
     openTestDetailsDialog(test) {
       this.selectedTest = test
       this.showTestDialog = true
-      // Prevent body scroll when dialog is open
-      document.body.style.overflow = 'hidden'
     },
     closeTestDialog() {
       this.showTestDialog = false
       this.selectedTest = null
-      this.isEditingNotes = false // Add this line
-      this.editedNotes = ''
-      // Restore body scroll
-      document.body.style.overflow = 'auto'
+      this.cancelEditingTestNotes()
     },
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
+    async updateTrial(trialId, trialData) {
+      // expects caller to handle thrown errors, called only after tests are appended to this. trial
+      this.trial = await this.updateTrialStore(trialId, trialData)
+      return this.trial
     },
-    formatConfigKey(key) {
-      return key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())
+    async fetchTrialWithTests(trialId) {
+      await this.executeApiCallWithToasts(async () => {
+        this.trial = await this.fetchTrialWithTestsStore(trialId)
+        return this.trial
+      }, messages.fetching.general.failure)
     },
-    getVoltageRange(measurements) {
-      const voltages = measurements.map((m) => m.voltageX)
-      const min = Math.min(...voltages)
-      const max = Math.max(...voltages)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} mV`
-    },
-    getGateVoltageRange(measurements) {
-      const voltages = measurements.map((m) => m.gateV)
-      const min = Math.min(...voltages)
-      const max = Math.max(...voltages)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} V`
-    },
-    getTimeRange(measurements) {
-      const times = measurements.map((m) => m.time)
-      const min = Math.min(...times)
-      const max = Math.max(...times)
-      return `${min.toFixed(3)} - ${max.toFixed(3)} s`
-    },
-    exportTestData() {
-      if (!this.selectedTest || !this.selectedTest.measurements) return
-
-      const csvContent = this.generateCSV(this.selectedTest)
-      const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `test-${this.selectedTest.id || this.selectedTest._id}-data.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-    },
-    generateCSV(test) {
-      const headers =
-        test.type === 'gate'
-          ? ['Vg (V)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
-          : ['Time (s)', 'X (mV)', 'Y (mV)', 'I (nA)', 'f (Hz)']
-
-      const rows = test.measurements.map((m) =>
-        test.type === 'gate'
-          ? [m.gateV, m.voltageX, m.voltageY, m.current, m.frequency]
-          : [m.time, m.voltageX, m.voltageY, m.current, m.frequency],
+    async saveTestNotes() {
+      await this.executeApiCallWithToasts(
+        async () => {
+          const newTest = await this.updateTestStore(
+            this.selectedTest.id || this.selectedTest._id,
+            { notes: this.editedTestNotes },
+          )
+          this.selectedTest.notes = this.editedTestNotes
+          // Update the test in the trial.tests array as well
+          const testIndex = this.findIndexById(this.trial.tests, this.selectedTest._id)
+          if (testIndex !== -1) {
+            this.trial.tests[testIndex].notes = this.editedTestNotes
+          }
+          this.cancelEditingTestNotes()
+          return newTest
+        },
+        messages.tests.updated.notes.failure,
+        messages.tests.updated.notes.success,
       )
-
-      return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
     },
-    async loadPrevTrial() {
-      if (this.isLoading) return
-
-      this.isLoading = true
-
-      try {
-        const id = this.trialsStore.prevTrial()
-        await this.fetchTrialWithTests(id)
-        this.$router.push({ name: 'trial', params: { trialId: id } })
-      } finally {
-        this.isLoading = false
-      }
+    async saveTrialProcedures() {
+      await this.executeApiCallWithToasts(
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, {
+            ...this.trial,
+            procedures: this.editedTrialProcedures,
+          })
+          this.resetStates(this.getTrialProceduresStates)
+          return updatedTrial
+        },
+        messages.trials.updated.procedures.failure,
+        messages.trials.updated.procedures.success,
+      )
+    },
+    async saveTrialNotes() {
+      await this.executeApiCallWithToasts(
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, {
+            ...this.trial,
+            notes: this.editedTrialNotes,
+          })
+          this.resetStates(this.getTrialNotesStates)
+          return updatedTrial
+        },
+        messages.trials.updated.notes.failure,
+        messages.trials.updated.notes.success,
+      )
     },
     async handleTagsUpdate(tags) {
-      console.log({ ...this.trial, tags: tags })
-      try {
-        this.trial = await this.updateTrialStore(this.trial._id, { ...this.trial, tags })
-        console.log('new trial:', this.trial)
-      } catch (error) {
-        console.error('Failed updating trial tags:', error)
-      }
+      await this.executeApiCallWithToasts(
+        async () => {
+          const updatedTrial = await this.updateTrial(this.trial._id, { ...this.trial, tags })
+          return updatedTrial
+        },
+        messages.trials.updated.tags.failure,
+        messages.trials.updated.tags.success,
+      )
     },
-    async deleteTest(testId, trialId) {
-      const confirmed = window.confirm('Are you sure you want to delete this test?')
+    async deleteTest(testId) {
+      const confirmed = window.confirm(messages.tests.deleted.confirm)
       if (!confirmed) return
+      await this.executeApiCallWithToasts(
+        //backend returns success message, but unused
+        async () => {
+          await this.deleteTestByTestIdStore(testId)
 
-      try {
-        await deleteTestByTestId(testId)
-        this.trial = await this.fetchTrialWithTestsStore(trialId)
-      } catch (error) {
-        console.error('Failed to delete test:', error)
-      }
+          //optimistic approach of removing the deleted test
+          this.trial.tests = this.removeElemsById(this.trial.tests, testId)
+        },
+        messages.tests.deleted.failure,
+        messages.tests.deleted.success,
+      )
     },
     async loadNextTrial() {
       if (this.isLoading) return
 
       this.isLoading = true
+      this.resetStates(this.getTrialProceduresStates)
 
       try {
-        const id = this.trialsStore.nextTrial()
+        const id = this.nextTrial()
         await this.fetchTrialWithTests(id)
         this.$router.push({ name: 'trial', params: { trialId: id } })
       } finally {
         this.isLoading = false
       }
     },
+    async loadPrevTrial() {
+      if (this.isLoading) return
+
+      this.isLoading = true
+      this.resetStates(this.getTrialProceduresStates)
+
+      try {
+        const id = this.prevTrial()
+        await this.fetchTrialWithTests(id)
+        this.$router.push({ name: 'trial', params: { trialId: id } })
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    /**
+     * Executes an API call and displays results
+     * @param {Function} apiCall The function to execute
+     * @param {String} errorMsg Error message to log to the console and display via toasts
+     * @param {String|null} [successMsg=null] Success message to display via toasts
+     * @returns {Promise<Object>} Result of the API call
+     */
+    async executeApiCallWithToasts(apiCall, errorMsg, successMsg = null) {
+      try {
+        const result = await apiCall()
+        if (successMsg) toast.success(successMsg)
+        return result
+      } catch (error) {
+        console.error(errorMsg, ':', error)
+        toast.error(error.message ?? errorMsg)
+      }
+    },
   },
 }
 </script>
-
-<style scoped>
-.trial-view {
-  padding: 12px 16px;
-}
-
-.trial-header {
-  max-width: 400px;
-  min-width: auto;
-}
-
-.card {
-  background-color: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  min-width: 320px;
-  font-family: system-ui, sans-serif;
-  transition: box-shadow 0.2s ease-in-out;
-}
-
-.card-button {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  text-align: center;
-  cursor: pointer;
-  position: relative;
-}
-
-.card-header {
-  margin-bottom: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.card-actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0;
-  color: #111827;
-  text-transform: capitalize;
-}
-
-.card-description {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.card-content {
-  font-size: 1rem;
-  color: #374151;
-  margin-bottom: 1rem;
-}
-
-.card-footer {
-  display: flex;
-}
-
-.trial-info {
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-  display: flex;
-  gap: 1rem;
-}
-
-.trial-tests {
-  margin-top: 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.btn {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-}
-
-.btn-primary {
-  background-color: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #2563eb;
-}
-
-.btn-secondary {
-  background-color: #6b7280;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #4b5563;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: #6b7280;
-  border: 1px solid #d1d5db;
-}
-
-.btn-outline:hover {
-  background-color: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-}
-
-/* Dialog Styles */
-.dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.dialog {
-  background: white;
-  border-radius: 1rem;
-  max-width: 800px;
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.dialog-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0;
-  color: #111827;
-}
-
-.dialog-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  color: #6b7280;
-  transition: all 0.2s;
-}
-
-.dialog-close:hover {
-  background-color: #f3f4f6;
-  color: #111827;
-}
-
-.dialog-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 1.5rem;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 1.5rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-/* Detail Section Styles */
-.detail-section {
-  margin-bottom: 2rem;
-}
-
-.detail-section:last-child {
-  margin-bottom: 0;
-}
-
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0 0 1rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #f3f4f6;
-}
-
-.detail-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-}
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.detail-item label {
-  font-weight: 500;
-  color: #5c5b5b;
-  font-size: 0.875rem;
-}
-
-.detail-item span {
-  color: #111827;
-  font-size: 0.875rem;
-}
-
-.monospace {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  background-color: #f3f4f6;
-  padding: 0.125rem 0.25rem;
-  border-radius: 0.25rem;
-  font-size: 0.8125rem;
-}
-
-.notes-content {
-  background-color: #f9fafb;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-}
-
-/* Data Table Styles */
-.data-table-container {
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table th,
-.data-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.data-table th {
-  background-color: #f9fafb;
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
-}
-
-.data-table td {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.8125rem;
-  color: #111827;
-}
-
-.data-table tr:last-child td {
-  border-bottom: none;
-}
-
-.data-note {
-  padding: 0.5rem 0.75rem;
-  background-color: #f9fafb;
-  color: #6b7280;
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.notes-content {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  color: #374151;
-  line-height: 1.6;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.notes-content:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.empty-notes {
-  color: #9ca3af;
-  font-style: italic;
-  margin: 0;
-}
-
-.notes-edit-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.notes-textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  resize: vertical;
-  min-height: 100px;
-  transition: border-color 0.2s;
-}
-
-.notes-textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.notes-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-}
-
-.commands-content {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  padding: 1rem;
-}
-
-.commands-content pre {
-  margin: 0;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.8125rem;
-  color: #374151;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-@media (max-width: 640px) {
-  .dialog {
-    margin: 0.5rem;
-    max-height: 95vh;
-  }
-
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .card-header {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .card-actions {
-    align-self: flex-start;
-  }
-}
-.trial-view-tags-container {
-  margin-top: 0.5rem;
-}
-</style>

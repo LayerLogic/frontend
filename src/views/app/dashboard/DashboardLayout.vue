@@ -1,6 +1,6 @@
 <template>
-  <section class="dashboard-wrapper">
-    <div class="dashboard-container">
+  <section class="flex gap-2">
+    <div class="px-4 py-8 flex flex-col gap-4">
       <component :is="currentRole" :username="username" />
     </div>
   </section>
@@ -42,17 +42,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.dashboard-wrapper {
-  display: flex;
-  gap: 8px;
-}
-
-.dashboard-container {
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-</style>

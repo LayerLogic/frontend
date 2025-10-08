@@ -1,29 +1,20 @@
 <template>
-  <div class="researcher-view">
-    <div class="content">
-      <h2>Your Trials</h2>
-      <p>Here you can manage trials, you can create, edit, and delete trials.</p>
+  <div class="w-screen max-w-3/4">
+    <div class="container">
+      <h2 class="text-3xl tracking-tight font-bold">Your Trials</h2>
+      <p class="text-base text-muted-foreground">
+        Here you can manage trials, you can create, edit, and delete trials.
+      </p>
 
-      <!-- Actions -->
-      <search-actions
-        :searchQuery="searchQuery"
-        :filter-type="filterType"
-        @update:searchQuery="searchQuery = $event.target.value"
-        @set-filter-type="setFilterType"
-        @fetch-filtered-trials="fetchFilteredTrials"
-        @open-create-drawer="openCreateDrawer"
-      />
-
-      <!-- Trials Table -->
-      <TrialsTable
-        :trials="trials"
+      <!-- Search and Filter Actions with the dataTable-->
+      <DataTable
+        :data="trials"
         @edit="openEditDrawer"
         @delete="confirmDelete"
         @create="openCreateDrawer"
       />
 
-      <!-- Edit Drawer -->
-      <TrialFormDrawer
+      <FormDrawer
         v-model:visible="editDrawer"
         title="Edit trial"
         :trial="selectedTrial"
@@ -31,8 +22,7 @@
         @close="closeDrawer"
       />
 
-      <!-- Create Drawer -->
-      <TrialFormDrawer
+      <FormDrawer
         v-model:visible="createDrawer"
         title="Create new trial"
         @submit="handleCreateTrial"
@@ -50,21 +40,21 @@
 </template>
 
 <script>
-import { api } from '@/api'
-import TrialsTable from '@/components/dashboard/TrialsTable.vue'
-import TrialFormDrawer from '@/components/dashboard/TrialFormDrawer.vue'
-import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
-import SearchActions from '@/components/dashboard/SearchActions.vue'
-import { useTrialsStore } from '@/store/trials'
 import { mapActions } from 'pinia'
+import { useTrialsStore } from '@/store/trials'
+import DataTable from '@/components/dashboard/DataTable.vue'
+import FormDrawer from '@/components/dashboard/FormDrawer.vue'
+import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
+import messages from '@/utils/messages.json'
+import { toast } from 'vue-sonner'
+import { removeElemsById } from '@/utils/helpers'
 
 export default {
   name: 'ResearcherView',
   components: {
-    TrialsTable,
-    TrialFormDrawer,
     DeleteConfirmationDialog,
-    SearchActions,
+    DataTable,
+    FormDrawer,
   },
   props: {
     username: {
@@ -89,7 +79,14 @@ export default {
     this.fetchTrials()
   },
   methods: {
-    ...mapActions(useTrialsStore, ['fetchTrialsStore']),
+    ...mapActions(useTrialsStore, [
+      'fetchTrialsStore',
+      'deleteTrialStore',
+      'createTrialStore',
+      'updateTrialStore',
+    ]),
+    //helper.js
+    removeElemsById,
     setFilterType(type) {
       if (this.filterType === type) {
         this.isFiltering = !this.isFiltering
@@ -114,53 +111,52 @@ export default {
       }
     },
     async fetchTrials() {
-      try {
-        const response = await this.fetchTrialsStore()
-        this.trials = response
-        this.allTrials = response
-      } catch (error) {
-        console.error('Failed to fetch trials:', error)
-      }
+      await this.executeApiCallWithToasts(async () => {
+        this.allTrials = await this.fetchTrialsStore()
+        this.trials = this.allTrials
+      }, messages.fetching.trials.multiple.failure)
     },
+
     async handleCreateTrial(trialData) {
       if (!trialData) return
-
-      try {
-        await api.trial.createtrial(trialData)
-        this.fetchTrials()
-        this.createDrawer = false
-      } catch (error) {
-        console.error('Failed to create trial:', error)
-      }
+      await this.executeApiCallWithToasts(
+        async () => {
+          const newTrial = await this.createTrialStore(trialData)
+          await this.fetchTrials()
+          this.createDrawer = false
+          return newTrial
+        },
+        messages.trials.created.failure,
+        messages.trials.created.success,
+      )
     },
 
     async handleUpdateTrial(trialData) {
       if (!this.selectedTrial) return
-
-      try {
-        await api.trial.updatetrial(this.selectedTrial._id, trialData)
-        this.fetchTrials()
-        this.editDrawer = false
-        this.selectedTrial = null
-      } catch (error) {
-        console.error('Failed to update trial:', error)
-      }
+      await this.executeApiCallWithToasts(
+        async () => {
+          const updatedTrial = await this.updateTrialStore(this.selectedTrial._id, trialData)
+          await this.fetchTrials()
+          this.editDrawer = false
+          this.selectedTrial = null
+          return updatedTrial
+        },
+        messages.trials.updated.general.failure,
+        messages.trials.updated.general.success,
+      )
     },
 
     async deleteTrial() {
-      if (!this.selectedTrial) {
-        console.error('No trial selected for deletion')
-        return
-      }
-
-      try {
-        await api.trial.deletetrial(this.selectedTrial._id)
-        this.trials = this.trials.filter((trial) => trial._id !== this.selectedTrial._id)
+      const deleteInfoMsg = await this.executeApiCallWithToasts(async () => {
+        const deleteInfoMsg = await this.deleteTrialStore(this.selectedTrial._id)
+        this.trials = this.removeElemsById(this.trials, this.selectedTrial._id)
+        this.allTrials = this.removeElemsById(this.allTrials, this.selectedTrial._id)
         this.deleteDialog = false
         this.selectedTrial = null
-      } catch (error) {
-        console.error('Failed to delete trial:', error)
-      }
+        return deleteInfoMsg
+      }, messages.trials.deleted.failure)
+
+      if (deleteInfoMsg) toast.success(deleteInfoMsg)
     },
 
     openEditDrawer(trial) {
@@ -182,12 +178,24 @@ export default {
       this.createDrawer = false
       this.selectedTrial = null
     },
+
+    /**
+     * Executes an API call and displays results
+     * @param {Function} apiCall The function to execute
+     * @param {String} errorMsg Error message to log to the console and display via toasts
+     * @param {String|null} [successMsg=null] Success message to display via toasts
+     * @returns {Promise<Object>} Result of the API call
+     */
+    async executeApiCallWithToasts(apiCall, errorMsg, successMsg = null) {
+      try {
+        const result = await apiCall()
+        if (successMsg) toast.success(successMsg)
+        return result
+      } catch (error) {
+        console.error(errorMsg, ':', error)
+        toast.error(error.message ?? errorMsg)
+      }
+    },
   },
 }
 </script>
-
-<style scoped>
-.researcher-view {
-  padding-bottom: 20px;
-}
-</style>

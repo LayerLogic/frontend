@@ -1,58 +1,26 @@
 <template>
-  <section class="app-wrapper">
-    <AppSidebar
-      :username="username"
-      :role="role"
-      :currentPath="$route.path"
-      :navigationGroups="navigationGroups"
-      :toggleSidebar="toggleSidebar"
-      :isCollapsed="opened"
-    />
-    <div class="app-container">
+  <SidebarProvider>
+    <AppSidebar />
+    <SidebarTrigger />
+    <section class="flex flex-col min-h-screen w-full">
       <RouterView />
-    </div>
-  </section>
+    </section>
+  </SidebarProvider>
 </template>
 
 <script>
-import { mapActions, mapState } from 'pinia'
 import { RouterView } from 'vue-router'
+
 import AppSidebar from '@/components/ui/AppSidebar.vue'
-import { useUserStore } from '@/store/user'
-import { useSidebarStore } from '@/store/sidebar'
+import { SidebarTrigger, SidebarProvider } from '@/components/ui/sidebar'
 
 export default {
   name: 'AppLayout',
   components: {
     RouterView,
     AppSidebar,
-  },
-  data() {
-    return {
-      currentRole: '',
-    }
-  },
-  computed: {
-    ...mapState(useUserStore, ['username', 'role']),
-    ...mapState(useSidebarStore, ['opened', 'navigationGroups']),
-  },
-  methods: {
-    ...mapActions(useSidebarStore, ['toggleSidebar']),
+    SidebarTrigger,
+    SidebarProvider,
   },
 }
 </script>
-
-<style scoped>
-.app-wrapper {
-  display: flex;
-  gap: 8px;
-}
-
-.app-container {
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-</style>

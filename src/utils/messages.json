@@ -1,0 +1,63 @@
+{
+    "tests":{
+        "updated":{
+            "general":{
+                "success": "Test updated successfully",
+                "failure": "Error updating test"
+            },
+            "notes":{
+                "success": "Test Notes saved successfully",
+                "failure": "Error saving test notes"
+            }
+        },
+        "deleted":{
+            "success": "Test deleted successfully",
+            "failure": "Error deleting test",
+            "confirm": "Are you sure you want to delete this test?"
+        }
+    },
+    "trials":{
+        "created":{
+            "success": "Trial created successfully",
+            "failure": "Error creating trial"
+        },
+        "updated":{
+            "general":{
+                "success": "Trial updated successfully",
+                "failure": "Error updating trial"
+            },
+            "notes":{
+                "success": "Trial Notes saved successfully",
+                "failure": "Error saving trial notes"
+            },
+            "tags":{
+                "success": "Trial tags updated successfully",
+                "failure": "Error updating trial tags"
+            },
+            "procedures":{
+                "success": "Trial procedures saved successfully",
+                "failure": "Error saving trial procedures"
+            }
+        },
+        "deleted":{
+            "success": "Trial deleted successfully",
+            "failure": "Error deleting trial"
+        }
+    },
+    "fetching":{
+        "general":{
+            "failure": "Error fetching trial or tests"
+        },
+        "trials":{
+            "multiple":{
+                "failure": "Error fetching trials"
+            },
+            "single":{
+                "failure": "Error fetching trial"
+            }
+        },
+        "tests":{
+            "failure": "Error fetching trial or tests"
+        }
+    }
+}

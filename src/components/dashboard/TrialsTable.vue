@@ -21,39 +21,14 @@
       {{ formatDate(item.updatedAt) }}
     </template>
 
-    <template v-slot:[`item.data-table-expand`]="{ internalItem, isExpanded, toggleExpand }">
+    <template v-slot:[`item.data-table-expand`]="{ internalItem }">
       <div class="actions">
-        <button class="btn btn-outline" @click="toggleExpand(internalItem)">
-          {{ isExpanded(internalItem) ? 'Collapse' : 'More info' }}
-          <v-icon>{{ isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-        </button>
         <ActionMenu
           @edit="$emit('edit', internalItem.raw)"
           @delete="$emit('delete', internalItem.raw)"
           :id="internalItem.raw._id"
         />
       </div>
-    </template>
-
-    <template v-slot:expanded-row="{ columns, item }">
-      <tr>
-        <td :colspan="columns.length" class="py-2">
-          <v-table class="expanded-table">
-            <tbody class="more-info-header">
-              <tr>
-                <th>Procedures</th>
-                <th>Notes</th>
-              </tr>
-            </tbody>
-            <tbody>
-              <tr>
-                <td class="inner-html py-4" v-html="item.procedures"></td>
-                <td class="inner-html py-4" v-html="item.notes"></td>
-              </tr>
-            </tbody>
-          </v-table>
-        </td>
-      </tr>
     </template>
   </v-data-table>
 </template>
@@ -87,8 +62,8 @@ export default {
     }
   },
   methods: {
-    goToTrial(e, trial){
-      this.$router.push({path: `trial/${trial.internalItem.raw._id}`})
+    goToTrial(e, trial) {
+      this.$router.push({ path: `trial/${trial.internalItem.raw._id}` })
     },
     formatDate(date) {
       return new Intl.DateTimeFormat('en-US', {
@@ -96,7 +71,7 @@ export default {
         month: 'short',
         day: '2-digit',
         hour: 'numeric',
-        minute: 'numeric'
+        minute: 'numeric',
       }).format(new Date(date))
     },
   },

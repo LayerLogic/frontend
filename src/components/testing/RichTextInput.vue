@@ -1,8 +1,10 @@
 <template>
-  <div class="note-editor-container">
+  <div
+    class="flex flex-col border border-border rounded-md overflow-hidden transition-all duration-200 focus-within:border-primary"
+  >
     <div
       ref="editor"
-      class="note-editor"
+      class="flex-1 min-h-[200px] p-4 outline-none text-sm leading-relaxed overflow-y-auto empty:before:content-[attr(placeholder)] empty:before:text-gray-500 empty:before:opacity-60 empty:before:cursor-text [&_p]:m-0 [&_p]:mb-2"
       contenteditable="true"
       @input="handleInput"
       @focus="isEditorFocused = true"
@@ -64,44 +66,3 @@ export default {
   },
 }
 </script>
-
-<style>
-.note-editor-container {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background-color: var(--color-background);
-  overflow: hidden;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.note-editor-container:focus-within {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(124, 25, 246, 0.1);
-}
-
-.note-editor {
-  flex: 1;
-  min-height: 200px;
-  padding: 16px;
-  outline: none;
-  color: var(--color-text, #333);
-  font-size: 16px;
-  line-height: 1.6;
-  overflow-y: auto;
-}
-
-.note-editor:empty:before {
-  content: attr(placeholder);
-  color: var(--color-text-muted);
-  opacity: 0.6;
-  cursor: text;
-}
-
-.note-editor p {
-  margin: 0 0 0.5em 0;
-}
-</style>

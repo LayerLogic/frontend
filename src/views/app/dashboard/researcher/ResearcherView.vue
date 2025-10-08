@@ -47,7 +47,7 @@ import FormDrawer from '@/components/dashboard/FormDrawer.vue'
 import DeleteConfirmationDialog from '@/components/ui/DeleteConfirmationDialog.vue'
 import messages from '@/utils/messages.json'
 import { toast } from 'vue-sonner'
-import { removeElemsById } from '@/utils/helpers'
+import { isTextEmpty, removeElemsById } from '@/utils/helpers'
 
 export default {
   name: 'ResearcherView',
@@ -87,6 +87,7 @@ export default {
     ]),
     //helper.js
     removeElemsById,
+    isTextEmpty,
     setFilterType(type) {
       if (this.filterType === type) {
         this.isFiltering = !this.isFiltering
@@ -121,6 +122,8 @@ export default {
       if (!trialData) return
       await this.executeApiCallWithToasts(
         async () => {
+          trialData.procedures = this.isTextEmpty(trialData.procedures) ? '' : trialData.procedures
+          trialData.notes = this.isTextEmpty(trialData.notes) ? '' : trialData.notes
           const newTrial = await this.createTrialStore(trialData)
           await this.fetchTrials()
           this.createDrawer = false
@@ -135,6 +138,8 @@ export default {
       if (!this.selectedTrial) return
       await this.executeApiCallWithToasts(
         async () => {
+          trialData.procedures = this.isTextEmpty(trialData.procedures) ? '' : trialData.procedures
+          trialData.notes = this.isTextEmpty(trialData.notes) ? '' : trialData.notes
           const updatedTrial = await this.updateTrialStore(this.selectedTrial._id, trialData)
           await this.fetchTrials()
           this.editDrawer = false

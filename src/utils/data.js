@@ -39,7 +39,6 @@ export function getTimeRange(measurements) {
   return `${min.toFixed(3)} - ${max.toFixed(3)} s`
 }
 
-
 export function exportTestData(test) {
   if (!test || !test.measurements) return
 
@@ -67,5 +66,5 @@ function generateCSV(test) {
       : [m.time, m.voltageX, m.voltageY, m.current, m.frequency],
   )
 
-  return [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+  return [headers.join(';'), ...rows.map((row) => row.join(';'))].join('\n')
 }

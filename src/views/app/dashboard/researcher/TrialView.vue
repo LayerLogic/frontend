@@ -120,18 +120,16 @@
             <div
               v-if="trial.procedures"
               v-html="trial.procedures"
-              class="text-sm whitespace-pre-wrap break-words"
+              class="text-sm whitespace-pre-wrap break-words border border-border rounded-md p-2"
             ></div>
             <p v-else class="text-sm text-muted-foreground italic">Click to add procedures...</p>
           </CardContent>
 
           <CardContent v-if="isEditingTrialProcedures && showTrialProcedures">
-            <UiTextarea
+            <RichTextInput
               v-model="editedTrialProcedures"
+              :initial-content="editedTrialProcedures || ''"
               placeholder="Add your procedures here..."
-              rows="4"
-              @keydown.ctrl.enter="saveTrialProcedures"
-              @keydown.esc="cancelEditingTrialProcedures"
             />
             <div class="flex justify-end gap-2 mt-3">
               <UiButton variant="secondary" size="sm" @click="cancelEditingTrialProcedures">
@@ -169,18 +167,16 @@
             <div
               v-if="trial.notes"
               v-html="trial.notes"
-              class="text-sm whitespace-pre-wrap break-words"
+              class="text-sm whitespace-pre-wrap break-words border border-border rounded-md p-2"
             ></div>
             <p v-else class="text-sm text-muted-foreground italic">Click to add notes...</p>
           </CardContent>
 
           <CardContent v-if="isEditingTrialNotes && showTrialNotes">
-            <UiTextarea
+            <RichTextInput
               v-model="editedTrialNotes"
+              :initial-content="editedTrialNotes || ''"
               placeholder="Add your notes here..."
-              rows="4"
-              @keydown.ctrl.enter="saveTrialNotes"
-              @keydown.esc="cancelEditingTrialNotes"
             />
             <div class="flex justify-end gap-2 mt-3">
               <UiButton variant="secondary" size="sm" @click="cancelEditingTrialNotes">
@@ -365,6 +361,7 @@ import {
   toggleBoolStates,
   findIndexById,
   removeElemsById,
+  isTextEmpty,
 } from '@/utils/helpers'
 import messages from '@/utils/messages.json'
 import { Button as UiButton } from '@/components/ui/button'
@@ -378,6 +375,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Textarea as UiTextarea } from '@/components/ui/textarea'
+import RichTextInput from '@/components/testing/RichTextInput.vue'
 import { Label as UiLabel } from '@/components/ui/label'
 import { Eye, Trash2, Save, ChevronDown } from 'lucide-vue-next'
 
@@ -404,6 +402,7 @@ export default {
     Trash2,
     Save,
     ChevronDown,
+    RichTextInput,
   },
   data() {
     return {
@@ -473,6 +472,7 @@ export default {
     toggleBoolStates,
     findIndexById,
     removeElemsById,
+    isTextEmpty,
     resetStates(varsArray) {
       resetEditingStates(this, varsArray)
     },
@@ -548,7 +548,9 @@ export default {
         async () => {
           const updatedTrial = await this.updateTrial(this.trial._id, {
             ...this.trial,
-            procedures: this.editedTrialProcedures,
+            procedures: this.isTextEmpty(this.editedTrialProcedures)
+              ? ''
+              : this.editedTrialProcedures,
           })
           this.resetStates(this.getTrialProceduresStates)
           return updatedTrial
@@ -562,7 +564,7 @@ export default {
         async () => {
           const updatedTrial = await this.updateTrial(this.trial._id, {
             ...this.trial,
-            notes: this.editedTrialNotes,
+            notes: this.isTextEmpty(this.editedTrialNotes) ? '' : this.editedTrialNotes,
           })
           this.resetStates(this.getTrialNotesStates)
           return updatedTrial

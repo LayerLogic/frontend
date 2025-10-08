@@ -38,3 +38,9 @@ export function removeElemsById(array, elementId) {
   const newArray = array.filter((e) => (e.id || e._id) !== elementId)
   return newArray
 }
+
+export function isTextEmpty(text) {
+  return (
+    !text || text.trim() === '' || text === '<p><br></p>' || text === '<br>' || text === '&nbsp;'
+  )
+}

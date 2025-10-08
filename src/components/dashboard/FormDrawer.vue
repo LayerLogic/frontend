@@ -55,22 +55,20 @@
           <!-- Procedure -->
           <div class="flex flex-col gap-1.5">
             <UiLabel for="procedures">Procedure</UiLabel>
-            <UiTextarea
-              id="procedures"
+            <RichTextInput
               v-model="formData.procedures"
-              placeholder="Procedure when producing the chip..."
-              class="min-h-[120px]"
+              :initial-content="formData.procedures || ''"
+              placeholder="Add your procedures here..."
             />
           </div>
 
           <!-- Notes -->
           <div class="flex flex-col gap-1.5">
             <UiLabel for="notes">Notes</UiLabel>
-            <UiTextarea
-              id="notes"
+            <RichTextInput
               v-model="formData.notes"
-              placeholder="What was dropped and settings etc..."
-              class="min-h-[120px]"
+              :initial-content="formData.notes || ''"
+              placeholder="Add your notes here..."
             />
           </div>
         </div>
@@ -148,9 +146,10 @@ import { AlertCircle as AlertCircleIcon } from 'lucide-vue-next'
 import { Button as UiButton } from '@/components/ui/button'
 import { Input as UiInput } from '@/components/ui/input'
 import { Label as UiLabel } from '@/components/ui/label'
-import { Textarea as UiTextarea } from '@/components/ui/textarea'
 import TagsInput from '@/components/testing/TagsInput.vue'
 import MultiSelect from '@/components/ui/MultiSelect.vue'
+import RichTextInput from '../testing/RichTextInput.vue'
+import { isTextEmpty } from '@/utils/helpers'
 
 export default {
   name: 'FormDrawer',
@@ -167,10 +166,10 @@ export default {
     UiButton,
     UiInput,
     UiLabel,
-    UiTextarea,
     AlertCircleIcon,
     TagsInput,
     MultiSelect,
+    RichTextInput,
   },
   props: {
     visible: {
@@ -230,6 +229,7 @@ export default {
     },
   },
   methods: {
+    isTextEmpty,
     handleOpenChange(value) {
       this.$emit('update:visible', value)
     },

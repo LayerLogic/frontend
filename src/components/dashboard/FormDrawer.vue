@@ -126,7 +126,7 @@
         </p>
       </div>
       <DialogFooter>
-        <Button @click="dialog = false">Ok</Button>
+        <UiButton @click="dialog = false">Ok</UiButton>
       </DialogFooter>
     </DialogContent>
   </UiDialog>

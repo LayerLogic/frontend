@@ -1,6 +1,5 @@
 import { z } from 'zod'
 
-
 const GateSettings = z.object({
   vgMax: z.number(),
   vgMin: z.number(),
@@ -31,7 +30,7 @@ export const TestSchema = z.looseObject({
       frequency: z.number(),
     }),
   ),
-  settings: Settings,
+  settings: Settings.optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 })

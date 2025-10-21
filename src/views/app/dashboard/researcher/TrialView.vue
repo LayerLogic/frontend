@@ -514,7 +514,8 @@ export default {
     },
     async updateTrial(trialId, trialData) {
       // expects caller to handle thrown errors, called only after tests are appended to this. trial
-      this.trial = await this.updateTrialStore(trialId, trialData)
+      const { name, tags, procedures, notes } = trialData
+      this.trial = await this.updateTrialStore(trialId, { name, tags, procedures, notes })
       return this.trial
     },
     async fetchTrialWithTests(trialId) {
